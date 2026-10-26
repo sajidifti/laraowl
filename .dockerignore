@@ -1,6 +1,4 @@
 .git
-.env
-.env.backup
 **/node_modules
 **/vendor
 public/build
