@@ -1,6 +1,8 @@
 import { Head, usePage } from '@inertiajs/react';
 import {
     Activity,
+    AlertTriangle,
+    FileText,
     Globe,
     Database,
     Mail,
@@ -12,6 +14,7 @@ import {
 import { useState } from 'react';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CodeBlock } from '@/components/code-block';
+import { RelatedRecordsTable } from '@/components/related-records-table';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
@@ -20,6 +23,7 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import AppLayout from '@/layouts/app-layout';
+import { show as showRecord } from '@/routes/records';
 
 export default function RecordShow({
     record,
@@ -30,7 +34,7 @@ export default function RecordShow({
     relatedRecords?: any[];
     highlight_record_id?: number;
 }) {
-    usePage();
+    const { props: pageProps }: any = usePage();
     const payload = record.payload || {};
     const [expandedHeaders, setExpandedHeaders] = useState(false);
     const [expandedPayload, setExpandedPayload] = useState(false);
@@ -59,6 +63,7 @@ export default function RecordShow({
     const events = [
         {
             label: 'QUERIES',
+            type: 'query',
             icon: Database,
             count: countOf(payload.queries),
             duration:
@@ -67,37 +72,68 @@ export default function RecordShow({
         },
         {
             label: 'MAIL',
+            type: 'mail',
             icon: Mail,
             count: countOf(payload.mail),
             duration: 0,
         },
         {
             label: 'CACHE',
+            type: 'cache-event',
             icon: Layers,
             count: countOf(payload.cache_events),
             duration: 0,
         },
         {
             label: 'OUTGOING REQUESTS',
+            type: 'outgoing-request',
             icon: Globe,
             count: countOf(payload.outgoing_requests),
             duration: 0,
         },
         {
             label: 'NOTIFICATIONS',
+            type: 'notification',
             icon: Bell,
             count: countOf(payload.notifications),
             duration: 0,
         },
         {
             label: 'QUEUED JOBS',
+            type: 'queued-job',
             icon: Activity,
             count: countOf(payload.jobs_queued),
+            duration: 0,
+        },
+        {
+            label: 'LOGS',
+            type: 'log',
+            icon: FileText,
+            count: countOf(payload.logs),
+            duration: 0,
+        },
+        {
+            label: 'EXCEPTIONS',
+            type: 'exception',
+            icon: AlertTriangle,
+            count: countOf(payload.exceptions),
             duration: 0,
         },
     ];
 
     const totalEvents = events.reduce((acc, event) => acc + event.count, 0);
+    const [openEvent, setOpenEvent] = useState<string | null>(null);
+    const openEventRecords = relatedRecords.filter((r) => r.type === openEvent);
+
+    const recordHref = (id: number) =>
+        showRecord.url({
+            current_team:
+                pageProps.current_team?.slug || pageProps.currentTeam?.slug,
+            project:
+                pageProps.current_project?.slug ||
+                pageProps.currentProject?.slug,
+            record: id,
+        });
 
     const subLabel = (sub: any) => {
         const p = sub.payload || {};
@@ -113,6 +149,12 @@ export default function RecordShow({
                 return p.class;
             case 'cache-event':
                 return `${p.type || 'cache'} ${p.key || ''}`.trim();
+            case 'queued-job':
+                return p.name || p.job || p.job_class;
+            case 'exception':
+                return `${p.class || 'Exception'}: ${p.message || ''}`;
+            case 'log':
+                return `[${p.level || 'log'}] ${p.message || ''}`;
             default:
                 return p.message || 'Event';
         }
@@ -324,22 +366,56 @@ export default function RecordShow({
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 gap-x-12 md:grid-cols-2">
-                                {events.map((event, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center justify-between border-b border-border py-2"
+                                {events.map((event) => (
+                                    <button
+                                        key={event.type}
+                                        type="button"
+                                        disabled={event.count === 0}
+                                        onClick={() =>
+                                            setOpenEvent(
+                                                openEvent === event.type
+                                                    ? null
+                                                    : event.type,
+                                            )
+                                        }
+                                        className={`flex items-center justify-between border-b border-border py-2 text-left transition-colors enabled:cursor-pointer enabled:hover:bg-muted/30 disabled:opacity-50 ${openEvent === event.type ? 'bg-muted/40' : ''}`}
                                     >
-                                        <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                        <span className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                            <event.icon className="h-3 w-3" />
                                             {event.label}
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <span className="font-mono text-sm text-foreground/90">
                                                 {event.count} Events
                                             </span>
+                                            {event.count > 0 &&
+                                                (openEvent === event.type ? (
+                                                    <ChevronDown className="h-3 w-3" />
+                                                ) : (
+                                                    <ChevronRight className="h-3 w-3" />
+                                                ))}
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
+
+                            {openEvent && (
+                                <div className="mt-4 overflow-hidden rounded-lg border border-border">
+                                    {openEventRecords.length > 0 ? (
+                                        <RelatedRecordsTable
+                                            type={openEvent}
+                                            records={openEventRecords}
+                                            hrefFor={recordHref}
+                                        />
+                                    ) : (
+                                        <div className="px-4 py-3 text-xs text-muted-foreground">
+                                            No linked records found for this
+                                            event. It may have been sampled out
+                                            or recorded without a trace id.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Card>
