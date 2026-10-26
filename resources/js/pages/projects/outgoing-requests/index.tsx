@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { RawHttpTable } from '@/components/raw-http-table';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -20,6 +21,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
 import { monitoringQuery } from '@/lib/monitoring-query';
@@ -27,14 +29,16 @@ import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showOutgoingRequest } from '@/routes/outgoing-requests';
 
 export default function OutgoingRequestsIndex({
-    hosts,
+    records,
+    view = 'raw',
     timeSeries = [],
     overview,
     period,
     from,
     to,
 }: {
-    hosts: any;
+    records: any;
+    view?: string;
     timeSeries: any;
     overview: any;
     period?: string | null;
@@ -49,7 +53,7 @@ export default function OutgoingRequestsIndex({
 
     useLiveReload(currentProject?.id);
 
-    const data = hosts.data || [];
+    const data = records.data || [];
     const outgoingRequestDetailsHref = (hash: string | number) =>
         showOutgoingRequest.url(
             {
@@ -258,16 +262,47 @@ export default function OutgoingRequestsIndex({
                 {/* Table Section */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
+                        <ViewPills
+                            current={view}
+                            views={[
+                                { value: 'raw', label: 'Raw' },
+                                { value: 'routes', label: 'By Route' },
+                                { value: 'hosts', label: 'By Host' },
+                            ]}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Globe className="h-4 w-4 text-muted-foreground" />
                             <span>
-                                {formatCompactNumber(hosts.total || 0)} Domains
+                                {formatCompactNumber(records.total || 0)}{' '}
+                                {
+                                    {
+                                        raw: 'Requests',
+                                        routes: 'Routes',
+                                        hosts: 'Domains',
+                                    }[view]
+                                }
                             </span>
                         </div>
                     </div>
 
                     <div className="overflow-hidden rounded-lg border border-border bg-card">
-                        {data.length > 0 ? (
+                        {data.length > 0 && view === 'raw' ? (
+                            <>
+                                <RawHttpTable records={data} showHost />
+                                <Pagination
+                                    links={records.links}
+                                    meta={records}
+                                />
+                            </>
+                        ) : data.length > 0 && view === 'routes' ? (
+                            <>
+                                <OutgoingRouteTable rows={data} />
+                                <Pagination
+                                    links={records.links}
+                                    meta={records}
+                                />
+                            </>
+                        ) : data.length > 0 ? (
                             <>
                                 <Table>
                                     <TableHeader className="bg-muted/30">
@@ -364,7 +399,10 @@ export default function OutgoingRequestsIndex({
                                         ))}
                                     </TableBody>
                                 </Table>
-                                <Pagination links={hosts.links} meta={hosts} />
+                                <Pagination
+                                    links={records.links}
+                                    meta={records}
+                                />
                             </>
                         ) : (
                             <div className="p-12">
@@ -379,6 +417,58 @@ export default function OutgoingRequestsIndex({
                 </div>
             </div>
         </>
+    );
+}
+
+function OutgoingRouteTable({ rows }: { rows: any[] }) {
+    return (
+        <Table>
+            <TableHeader className="bg-muted/30">
+                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                    <TableHead className="pl-6">Method</TableHead>
+                    <TableHead>Endpoint</TableHead>
+                    <TableHead className="text-center">1/2/3xx</TableHead>
+                    <TableHead className="text-center">4xx</TableHead>
+                    <TableHead className="text-center">5xx</TableHead>
+                    <TableHead className="text-center">Total</TableHead>
+                    <TableHead className="text-right">Avg</TableHead>
+                    <TableHead className="pr-6 text-right">P95</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {rows.map((row) => (
+                    <TableRow
+                        key={row.hash}
+                        className="border-border transition-colors hover:bg-muted/30"
+                    >
+                        <TableCell className="pl-6 text-[10px] font-bold text-muted-foreground uppercase">
+                            {row.method}
+                        </TableCell>
+                        <TableCell className="max-w-[520px] font-mono text-xs break-all text-foreground/90">
+                            {row.endpoint}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs text-foreground/60">
+                            {formatCompactNumber(row.ok_count || 0)}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs font-bold text-orange-500">
+                            {formatCompactNumber(row.client_error_count || 0)}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs font-bold text-red-500">
+                            {formatCompactNumber(row.server_error_count || 0)}
+                        </TableCell>
+                        <TableCell className="text-center font-mono text-xs font-bold text-foreground">
+                            {formatCompactNumber(row.total || 0)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-xs text-foreground/90">
+                            {formatMicroSeconds(row.avg_duration)}
+                        </TableCell>
+                        <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                            {formatMicroSeconds(row.p95_duration)}
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     );
 }
 

@@ -35,7 +35,8 @@ RUN composer dump-autoload --optimize --no-dev \
     && npm cache clean --force \
     && chmod -R a+rX . \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && cp -a public /usr/share/laraowl-public
 
 COPY docker/php-fpm-entrypoint /usr/local/bin/php-entrypoint
 RUN chmod a+x /usr/local/bin/php-entrypoint

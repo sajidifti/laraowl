@@ -204,6 +204,25 @@ test('the outgoing requests list groups by host', function () {
         ->and((int) $row->ok_count)->toBe(1);
 });
 
+test('the outgoing requests are also grouped by method and normalised endpoint', function () {
+    $project = Project::factory()->create();
+
+    ingestGroups($project, [
+        ['t' => 'outgoing-request', '_group' => 'h', 'host' => 'api.stripe.com', 'method' => 'GET', 'url' => 'https://api.stripe.com/v1/customers/42?expand=card', 'status_code' => 200, 'duration' => 100],
+        ['t' => 'outgoing-request', '_group' => 'h', 'host' => 'api.stripe.com', 'method' => 'GET', 'url' => 'https://api.stripe.com/v1/customers/77', 'status_code' => 500, 'duration' => 100],
+        ['t' => 'outgoing-request', '_group' => 'h', 'host' => 'api.stripe.com', 'method' => 'POST', 'url' => 'https://api.stripe.com/v1/charges', 'status_code' => 200, 'duration' => 100],
+    ]);
+
+    $rows = collect(service()->getOutgoingRouteGroups($project, '1h')->items())->keyBy('endpoint');
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows['api.stripe.com/v1/customers/{id}']->method)->toBe('GET')
+        ->and((int) $rows['api.stripe.com/v1/customers/{id}']->total)->toBe(2)
+        ->and((int) $rows['api.stripe.com/v1/customers/{id}']->server_error_count)->toBe(1)
+        ->and($rows['api.stripe.com/v1/charges']->method)->toBe('POST')
+        ->and((int) service()->getOutgoingRequestStats($project, '1h')['hosts']->total())->toBe(1);
+});
+
 test('the scheduled tasks list keeps the cron expression and next run', function () {
     $project = Project::factory()->create();
 

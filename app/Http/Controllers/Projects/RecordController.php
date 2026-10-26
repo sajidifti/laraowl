@@ -68,7 +68,14 @@ class RecordController extends Controller
         $sort = request()->query('sort', 'total');
         $direction = request()->query('direction', 'desc');
 
-        return $this->renderWithStats('projects/requests', $this->recordService->getRequestStats($project, $period, $from, $to, $sort, $direction), $project, $period, $from, $to);
+        $view = request()->query('view') === 'routes' ? 'routes' : 'raw';
+        $data = $this->recordService->getRequestStats($project, $period, $from, $to, $sort, $direction);
+
+        if ($view === 'raw') {
+            $data['requests'] = $this->recordService->getPaginatedRecords($project, 'request', request('search'), $period, $from, $to);
+        }
+
+        return $this->renderWithStats('projects/requests', [...$data, 'view' => $view, 'search' => request('search')], $project, $period, $from, $to);
     }
 
     protected function renderUsersIndex(Project $project, string $period, ?string $from, ?string $to): Response
@@ -113,7 +120,17 @@ class RecordController extends Controller
 
     protected function renderOutgoingRequestsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/outgoing-requests', $this->recordService->getOutgoingRequestStats($project, $period, $from, $to), $project, $period, $from, $to);
+        $view = in_array(request()->query('view'), ['routes', 'hosts'], true) ? request()->query('view') : 'raw';
+        $data = $this->recordService->getOutgoingRequestStats($project, $period, $from, $to);
+
+        $data['records'] = match ($view) {
+            'raw' => $this->recordService->getPaginatedRecords($project, 'outgoing-request', request('search'), $period, $from, $to),
+            'routes' => $this->recordService->getOutgoingRouteGroups($project, $period, $from, $to),
+            'hosts' => $data['hosts'],
+        };
+        unset($data['hosts']);
+
+        return $this->renderWithStats('projects/outgoing-requests', [...$data, 'view' => $view, 'search' => request('search')], $project, $period, $from, $to);
     }
 
     protected function renderUptimeIndex(Project $project, string $period, ?string $from, ?string $to): Response

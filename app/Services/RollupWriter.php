@@ -95,13 +95,14 @@ class RollupWriter
             );
 
             $fingerprint = $entry['fingerprint'] ?? null;
+            $groupings = $fingerprint ? [$type => $fingerprint] : [];
 
-            if ($fingerprint) {
-                $groupKey = $type.'@'.$hour.'@'.$fingerprint;
-                [$label, $sublabel] = $this->groupLabelsFor($type, $payload);
+            foreach ($groupings + $this->derivedGroupingsFor($type, $payload) as $groupType => $groupFingerprint) {
+                $groupKey = $groupType.'@'.$hour.'@'.$groupFingerprint;
+                [$label, $sublabel] = $this->groupLabelsFor($groupType, $payload);
 
                 $groups[$groupKey] = $this->mergeDeltas(
-                    $groups[$groupKey] ?? $this->emptyGroupRow($project->id, $type, $hour, $fingerprint),
+                    $groups[$groupKey] ?? $this->emptyGroupRow($project->id, $groupType, $hour, $groupFingerprint),
                     $deltas,
                 );
 
@@ -203,6 +204,52 @@ class RollupWriter
     }
 
     /**
+     * Extra groupings a record is rolled up under, keyed by group type.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, string>
+     */
+    public function derivedGroupingsFor(string $type, array $payload): array
+    {
+        if ($type !== 'outgoing-request') {
+            return [];
+        }
+
+        [$method, $endpoint] = $this->groupLabelsFor('outgoing-route', $payload);
+
+        return $endpoint === null ? [] : ['outgoing-route' => md5($method.' '.$endpoint)];
+    }
+
+    /**
+     * Method and host + path of an outgoing URL, with id-like segments replaced by placeholders.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{0: string, 1: string|null}
+     */
+    protected function outgoingRouteFor(array $payload): array
+    {
+        $method = strtoupper($this->firstString($payload, ['method']) ?? 'GET');
+        $url = $this->firstString($payload, ['url']);
+        $host = $this->firstString($payload, ['host']) ?? ($url ? parse_url($url, PHP_URL_HOST) : null);
+
+        if (! $host) {
+            return [$method, null];
+        }
+
+        $segments = array_map(
+            fn (string $segment) => match (true) {
+                (bool) preg_match('/^\d+$/', $segment) => '{id}',
+                (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $segment) => '{uuid}',
+                (bool) preg_match('/^(?=.*\d)[0-9a-z_-]{20,}$/i', $segment) => '{token}',
+                default => $segment,
+            },
+            array_values(array_filter(explode('/', (string) ($url ? parse_url($url, PHP_URL_PATH) : '')), 'strlen')),
+        );
+
+        return [$method, mb_substr($host.'/'.implode('/', $segments), 0, 255)];
+    }
+
+    /**
      * The two columns a list page shows for a group, by record type.
      *
      * @param  array<string, mixed>  $payload
@@ -220,6 +267,7 @@ class RollupWriter
             'command' => [$first(['command', 'name'], 'Unknown Command'), null],
             'scheduled-task' => [$first(['command', 'name'], 'Unknown Task'), $first(['cron', 'expression', 'schedule'])],
             'outgoing-request' => [$first(['host']), null],
+            'outgoing-route' => $this->outgoingRouteFor($payload),
             'cache-event' => [$first(['key']), $first(['store'])],
             'notification' => [$first(['class']), $first(['channel'])],
             'mail' => [$first(['class']), $first(['mailer'])],

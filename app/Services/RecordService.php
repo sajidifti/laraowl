@@ -403,6 +403,20 @@ class RecordService
     }
 
     /**
+     * Outgoing requests grouped by method and normalised endpoint.
+     */
+    public function getOutgoingRouteGroups(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): LengthAwarePaginator
+    {
+        return $this->groupList($project, 'outgoing-route', $period, $from, $to)
+            ->through(function ($row) {
+                $row->method = $row->label;
+                $row->endpoint = $row->sublabel;
+
+                return $row;
+            });
+    }
+
+    /**
      * Cache Aggregation
      */
     public function getCacheStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array

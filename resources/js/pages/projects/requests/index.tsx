@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { RawHttpTable } from '@/components/raw-http-table';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -28,6 +29,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
 import { monitoringQuery } from '@/lib/monitoring-query';
@@ -44,6 +46,7 @@ export default function RequestsIndex({
     to,
     sort: currentSort = 'total',
     direction: currentDirection = 'desc',
+    view = 'raw',
 }: {
     requests: any;
     timeSeries: any;
@@ -54,6 +57,7 @@ export default function RequestsIndex({
     to?: string | null;
     sort?: string;
     direction?: string;
+    view?: string;
 }) {
     const { props }: any = usePage();
     const teamSlug = props.current_team?.slug || props.currentTeam?.slug;
@@ -374,16 +378,32 @@ export default function RequestsIndex({
                 {/* Table Section */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
+                        <ViewPills
+                            current={view}
+                            views={[
+                                { value: 'raw', label: 'Raw' },
+                                { value: 'routes', label: 'By Route' },
+                            ]}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Globe className="h-4 w-4 text-muted-foreground" />
                             <span>
-                                {formatCompactNumber(data.length)} Routes
+                                {formatCompactNumber(requests.total || 0)}{' '}
+                                {view === 'raw' ? 'Requests' : 'Routes'}
                             </span>
                         </div>
                     </div>
 
                     <div className="overflow-hidden rounded-lg border border-border bg-card">
-                        {data.length > 0 ? (
+                        {data.length > 0 && view === 'raw' ? (
+                            <>
+                                <RawHttpTable records={data} />
+                                <Pagination
+                                    links={requests.links}
+                                    meta={requests}
+                                />
+                            </>
+                        ) : data.length > 0 ? (
                             <>
                                 <Table>
                                     <TableHeader className="bg-muted/30">

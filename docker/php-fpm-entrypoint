@@ -7,6 +7,7 @@ main() {
         exec su-exec www-data "$@"
     else
         prepare_storage
+        sync_public
         wait_for_db
         run_migrations
         optimize_app
@@ -23,6 +24,12 @@ prepare_storage() {
     php artisan storage:link
 }
 
+# The public volume is only seeded on first run, so refresh it with this image's build.
+sync_public() {
+    echo "Syncing public assets..."
+    rm -rf /usr/share/caddy/html/public/build
+    cp -a /usr/share/laraowl-public/. /usr/share/caddy/html/public/
+}
 
 wait_for_db() {
     echo "Waiting for DB to be ready"

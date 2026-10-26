@@ -60,7 +60,7 @@ test('running the backfill twice does not double count', function () {
     expect($rollup->count)->toBe(2);
 });
 
-test('the backfill can be limited to one project', function () {
+test('the backfill can be limited to one project', function (string $identifier) {
     $mine = Project::factory()->create();
     $theirs = Project::factory()->create();
 
@@ -70,11 +70,11 @@ test('the backfill can be limited to one project', function () {
 
     RecordRollup::query()->delete();
 
-    $this->artisan('laraowl:rollups:backfill', ['--project' => $mine->slug])->assertExitCode(0);
+    $this->artisan('laraowl:rollups:backfill', ['--project' => (string) $mine->{$identifier}])->assertExitCode(0);
 
     expect(RecordRollup::where('project_id', $mine->id)->exists())->toBeTrue()
         ->and(RecordRollup::where('project_id', $theirs->id)->exists())->toBeFalse();
-});
+})->with(['slug', 'id']);
 
 test('--missing rebuilds only projects whose rollups are empty', function () {
     $upgraded = Project::factory()->create();
