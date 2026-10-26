@@ -183,6 +183,23 @@ REVERB_APP_SECRET=xxxxxxxxxxxxxxxxxxxxx
 
 The docker-compose.yaml file already has the correct service names for `db`, `redis`, and `reverb`. You only need to change the hostname and database credentials if you want to customize them.
 
+#### Optional Docker settings
+
+Caddy serves `APP_HOSTNAME` and `ws.APP_HOSTNAME` with automatic HTTPS on ports 80/443. Behind your own reverse proxy, set `CADDY_SITE_ADDRESS=:80` and pick a port with `CADDY_HTTP_PORT`.
+
+Two optional compose overrides are enabled by listing them in `COMPOSE_FILE` in `.env`:
+
+```dotenv
+COMPOSE_FILE=docker-compose.yaml:docker/compose/external-network.yaml:docker/compose/host-volumes.yaml
+
+# docker/compose/external-network.yaml: join Caddy to an existing network
+EXTERNAL_NETWORK=my-proxy-network
+NETWORK_ALIAS=laraowl.internal   # defaults to APP_HOSTNAME
+
+# docker/compose/host-volumes.yaml: keep persistent data on the host
+DATA_PATH=/srv/laraowl
+```
+
 #### Starting Production server
 Use the following command to start the server in production mode:
 

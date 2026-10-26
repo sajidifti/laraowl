@@ -1,84 +1,53 @@
 name: laraowl
+
+x-app: &app
+  image: laraowl:${APP_VERSION:-latest}
+  restart: unless-stopped
+  env_file:
+    - .env
+  networks:
+    - laraowl-network
+  volumes:
+    - storage:/usr/share/caddy/html/storage:rw
+    - public:/usr/share/caddy/html/public:rw
+
+x-worker: &worker
+  <<: *app
+  environment:
+    IS_WORKER: "true"
+  depends_on:
+    app:
+      condition: service_started
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
 services:
 
   app:
+    <<: *app
     build:
       context: .
       dockerfile: docker/Dockerfile
-    image: laraowl:${APP_VERSION:-latest}
-    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    env_file:
-      - .env
-    networks:
-      - laraowl-network
-    volumes:
-      - storage:/usr/share/caddy/html/storage:rw
-      - public:/usr/share/caddy/html/public:rw
 
   horizon:
-    image: laraowl:${APP_VERSION:-latest}
-    restart: unless-stopped
+    <<: *worker
     command: php artisan horizon
-    environment:
-      IS_WORKER: "true"
-    env_file:
-      - .env
-    depends_on:
-      app:
-        condition: service_started
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - laraowl-network
-    volumes:
-      - storage:/usr/share/caddy/html/storage:rw
-      - public:/usr/share/caddy/html/public:rw
 
   schedule-worker:
-    image: laraowl:${APP_VERSION:-latest}
-    restart: unless-stopped
+    <<: *worker
     command: php artisan schedule:work
-    environment:
-      IS_WORKER: "true"
-    env_file:
-      - .env
-    depends_on:
-      app:
-        condition: service_started
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - laraowl-network
-    volumes:
-      - storage:/usr/share/caddy/html/storage:rw
-      - public:/usr/share/caddy/html/public:rw
 
   reverb:
-    image: laraowl:${APP_VERSION:-latest}
-    restart: unless-stopped
+    <<: *worker
     command: php artisan reverb:start
-    environment:
-      IS_WORKER: "true"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      horizon:
-        condition: service_started
-    networks:
-      - laraowl-network
+    volumes: []
 
   caddy:
     image: caddy:2-alpine
@@ -87,91 +56,68 @@ services:
       app:
         condition: service_started
     ports:
-      - ${CADDY_BIND_IP:-0.0.0.0}:${CADDY_HTTP_PORT:-7777}:80
+      - ${CADDY_BIND_IP:-0.0.0.0}:${CADDY_HTTP_PORT:-80}:80
+      - ${CADDY_BIND_IP:-0.0.0.0}:${CADDY_HTTPS_PORT:-443}:443
+    environment:
+      # A hostname enables automatic HTTPS; use ":80" when TLS is terminated upstream.
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-${APP_HOSTNAME}, ws.${APP_HOSTNAME}}
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile
       - storage:/usr/share/caddy/html/storage:rw
       - public:/usr/share/caddy/html/public:ro
       - caddy_data:/data
       - caddy_config:/config
-    env_file:
-      - .env
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:2019/config/"]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
-      laraowl-network:
-      app-dev-net:
-        aliases:
-          - ${APP_HOSTNAME}
+      - laraowl-network
 
   db:
-    image: postgres:17-alpine
+    image: postgres:${POSTGRES_VERSION:-17}-alpine
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${DB_DATABASE}
-      - POSTGRES_USER=${DB_USERNAME}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    env_file:
-      - .env
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - laraowl-network
-
 
   redis:
-    image: bitnami/redis:latest
-    platform: linux/amd64
+    image: redis:${REDIS_VERSION:-8}-alpine
     restart: always
-    volumes:
-      - redis-data:/bitnami/redis/data
+    command: >
+      redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+      --rename-command FLUSHDB "" --rename-command FLUSHALL ""
     environment:
-      - ALLOW_EMPTY_PASSWORD=no
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-    env_file:
-      - .env
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "echo 'auth ${REDIS_PASSWORD}\nping' | redis-cli | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - laraowl-network
-
-x-host-volume: &host-volume
-  driver: local
 
 volumes:
   db-data:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/db-data" }
   redis-data:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/redis-data" }
   storage:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/storage" }
   public:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/public" }
   caddy_data:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/caddy_data" }
   caddy_config:
-    <<: *host-volume
-    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/caddy_config" }
 
 networks:
   laraowl-network:
     driver: bridge
-  app-dev-net:
-    external: true

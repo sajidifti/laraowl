@@ -1,2 +1,16 @@
+.git
+.env
+.env.backup
 **/node_modules
 **/vendor
+public/build
+public/hot
+public/storage
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+database/*.sqlite

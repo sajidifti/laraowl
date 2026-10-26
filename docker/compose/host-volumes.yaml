@@ -1,0 +1,23 @@
+# Stores all persistent data under DATA_PATH on the host. Create the subdirectories first.
+x-host-volume: &host-volume
+  driver: local
+
+volumes:
+  db-data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:?DATA_PATH must be set}/db-data" }
+  redis-data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH}/redis-data" }
+  storage:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH}/storage" }
+  public:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH}/public" }
+  caddy_data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH}/caddy_data" }
+  caddy_config:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH}/caddy_config" }
