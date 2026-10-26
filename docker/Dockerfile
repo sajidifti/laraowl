@@ -50,6 +50,7 @@ RUN npm install \
 
 # Set permissions and prepare Laravel
 RUN php artisan package:discover --ansi \
+  && chmod -R a+rX /usr/share/caddy/html \
   && chown -R www-data:www-data /usr/share/caddy/html/storage \
   && chown -R www-data:www-data /usr/share/caddy/html/bootstrap/cache \
   && chmod -R 775 /usr/share/caddy/html/storage \

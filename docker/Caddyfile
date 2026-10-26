@@ -1,4 +1,4 @@
-{$APP_HOSTNAME}, ws.{$APP_HOSTNAME} {
+{$CADDY_SITE_ADDRESS::80} {
         root * /usr/share/caddy/html/public
 
         header {
@@ -13,8 +13,6 @@
 
                 # clickjacking protection
                 X-Frame-Options "SAMEORIGIN"
-
-                Content-Security-Policy "upgrade-insecure-requests"
 
                 # hide server name
                 -Server Caddy

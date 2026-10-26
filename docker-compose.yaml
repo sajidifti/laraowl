@@ -29,6 +29,8 @@ services:
     env_file:
       - .env
     depends_on:
+      app:
+        condition: service_started
       db:
         condition: service_healthy
       redis:
@@ -48,6 +50,8 @@ services:
     env_file:
       - .env
     depends_on:
+      app:
+        condition: service_started
       db:
         condition: service_healthy
       redis:
@@ -83,8 +87,7 @@ services:
       app:
         condition: service_started
     ports:
-      - 80:80
-      - 443:443
+      - ${CADDY_BIND_IP:-0.0.0.0}:${CADDY_HTTP_PORT:-7777}:80
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile
       - storage:/usr/share/caddy/html/storage:rw
@@ -94,12 +97,15 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD", "wget", "--no-check-certificate", "--quiet", "--spider", "https://localhost/"]
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost/"]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
-      - laraowl-network
+      laraowl-network:
+      app-dev-net:
+        aliases:
+          - ${APP_HOSTNAME}
 
   db:
     image: postgres:17-alpine
@@ -141,14 +147,31 @@ services:
     networks:
       - laraowl-network
 
+x-host-volume: &host-volume
+  driver: local
+
 volumes:
   db-data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/db-data" }
   redis-data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/redis-data" }
   storage:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/storage" }
   public:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/public" }
   caddy_data:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/caddy_data" }
   caddy_config:
+    <<: *host-volume
+    driver_opts: { type: none, o: bind, device: "${DATA_PATH:-/app/home/image_data/laraowl}/caddy_config" }
 
 networks:
   laraowl-network:
     driver: bridge
+  app-dev-net:
+    external: true
