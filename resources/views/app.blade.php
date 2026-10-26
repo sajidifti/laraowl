@@ -38,10 +38,6 @@
         <link rel="icon" type="image/png" href="/logo.png">
         <link rel="apple-touch-icon" href="/logo.png">
 
-
-
-        @fonts
-
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
