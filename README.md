@@ -183,6 +183,59 @@ REVERB_APP_SECRET=xxxxxxxxxxxxxxxxxxxxx
 
 The docker-compose.yaml file already has the correct service names for `db`, `redis`, and `reverb`. You only need to change the hostname and database credentials if you want to customize them.
 
+#### Optional Docker settings
+
+Caddy serves `APP_HOSTNAME` and `ws.APP_HOSTNAME` with automatic HTTPS on ports 80/443. Behind your own reverse proxy, set `CADDY_SITE_ADDRESS=:80` and pick a port with `CADDY_HTTP_PORT`.
+
+Two optional compose overrides are enabled by listing them in `COMPOSE_FILE` in `.env`:
+
+```dotenv
+COMPOSE_FILE=docker-compose.yaml:docker/compose/external-network.yaml:docker/compose/host-volumes.yaml
+
+# docker/compose/external-network.yaml: join Caddy to an existing network
+EXTERNAL_NETWORK=my-proxy-network
+NETWORK_ALIAS=laraowl.internal   # defaults to APP_HOSTNAME
+
+# docker/compose/host-volumes.yaml: keep persistent data on the host
+DATA_PATH=/srv/laraowl
+```
+
+#### Running locally with Docker
+
+Locally there is no domain or TLS, so Caddy serves plain HTTP on a custom port. Copy the production file and generate an app key:
+
+```bash
+cp .env.prod .env
+echo "APP_KEY=base64:$(openssl rand -base64 32)"
+```
+
+Then set the following in `.env` (port `8080` is an example; use any free port):
+
+```dotenv
+APP_KEY=base64:...                 # from the command above
+APP_URL=http://localhost:8080
+APP_HOSTNAME=localhost
+ALLOW_REGISTRATION=true            # lets you create the first user from the UI
+
+CADDY_SITE_ADDRESS=:80             # plain HTTP, no certificates
+CADDY_BIND_IP=127.0.0.1
+CADDY_HTTP_PORT=8080
+CADDY_HTTPS_PORT=8443              # unused locally, but must not clash with anything on 443
+
+# Reverb is proxied by Caddy on the same host and port
+VITE_REVERB_HOST=localhost
+VITE_REVERB_PORT=8080
+VITE_REVERB_SCHEME=http
+```
+
+Start it and open `http://localhost:8080`:
+
+```bash
+docker compose up -d --build
+```
+
+`VITE_*` values are compiled into the frontend, so rebuild the image (`--build`) after changing them. To start over with an empty database, run `docker compose down -v`.
+
 #### Starting Production server
 Use the following command to start the server in production mode:
 

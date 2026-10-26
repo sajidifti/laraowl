@@ -1,0 +1,12 @@
+# Joins Caddy to an existing external network, reachable there as NETWORK_ALIAS.
+services:
+  caddy:
+    networks:
+      external-network:
+        aliases:
+          - ${NETWORK_ALIAS:-${APP_HOSTNAME}}
+
+networks:
+  external-network:
+    name: ${EXTERNAL_NETWORK:?EXTERNAL_NETWORK must be set}
+    external: true
