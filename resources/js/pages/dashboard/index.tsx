@@ -82,7 +82,7 @@ export default function Dashboard({
                                       : 'bg-red-500'
                             }`}
                         />
-                        <CardContent className="p-8">
+                        <CardContent className="p-5">
                             <div className="mb-6 flex items-center justify-between">
                                 <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                     Availability
@@ -115,7 +115,7 @@ export default function Dashboard({
                                           'Monitoring...'}
                                 </Badge>
                             </div>
-                            <div className="mb-2 text-3xl font-black tracking-tighter text-foreground">
+                            <div className="mb-2 text-2xl font-black tracking-tighter text-foreground">
                                 {!uptimeEnabled
                                     ? 'Monitoring Disabled'
                                     : uptime_status?.current === 'up'
@@ -282,13 +282,13 @@ export default function Dashboard({
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         {/* Requests Card */}
                         <Card className="group overflow-hidden border-border bg-card shadow-2xl">
-                            <CardContent className="p-8">
+                            <CardContent className="p-5">
                                 <div className="mb-8 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Requests
                                         </div>
-                                        <div className="text-4xl font-black tracking-tighter text-foreground">
+                                        <div className="text-3xl font-black tracking-tighter text-foreground">
                                             {formatCompactNumber(
                                                 total_requests,
                                             )}
@@ -338,7 +338,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[120px] w-full">
+                                <div className="h-[72px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
@@ -435,13 +435,13 @@ export default function Dashboard({
 
                         {/* Duration Card */}
                         <Card className="group overflow-hidden border-border bg-card shadow-2xl">
-                            <CardContent className="p-8">
+                            <CardContent className="p-5">
                                 <div className="mb-8 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Duration
                                         </div>
-                                        <div className="text-4xl font-black tracking-tighter text-foreground">
+                                        <div className="text-3xl font-black tracking-tighter text-foreground">
                                             {formatMicroSeconds(
                                                 duration_stats?.min,
                                             )}{' '}
@@ -480,7 +480,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[120px] w-full">
+                                <div className="h-[72px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
@@ -685,7 +685,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-3xl font-black tracking-tighter text-foreground">
+                                <div className="text-2xl font-black tracking-tighter text-foreground">
                                     {job_stats?.total || 0}
                                 </div>
                             </div>
@@ -707,7 +707,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-3xl font-black tracking-tighter text-foreground">
+                                <div className="text-2xl font-black tracking-tighter text-foreground">
                                     {formatMicroSeconds(
                                         (job_stats?.avg_duration || 0) * 1000,
                                     )}
@@ -838,7 +838,7 @@ export default function Dashboard({
                         {/* Auth vs Guest Charts */}
                         <div className="space-y-6 lg:col-span-4">
                             <Card className="border-border bg-card p-6 shadow-2xl">
-                                <div className="mb-6 flex items-start justify-between">
+                                <div className="mb-3 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Authenticated Users
@@ -906,7 +906,7 @@ export default function Dashboard({
                             </Card>
 
                             <Card className="border-border bg-card p-6 shadow-2xl">
-                                <div className="mb-6 flex items-start justify-between">
+                                <div className="mb-3 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Requests

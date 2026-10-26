@@ -70,13 +70,13 @@ export default function JobsIndex({
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                        <CardContent className="p-6">
-                            <div className="mb-6 flex items-start justify-between">
+                        <CardContent className="p-4">
+                            <div className="mb-3 flex items-start justify-between">
                                 <div>
                                     <div className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                         Total Jobs (Current View)
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatCompactNumber(overview.total)}
                                     </div>
                                 </div>
@@ -101,7 +101,7 @@ export default function JobsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[120px] w-full">
+                            <div className="h-[72px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
                                         <XAxis dataKey="minute" hide />
@@ -184,13 +184,13 @@ export default function JobsIndex({
                     </Card>
 
                     <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                        <CardContent className="p-6">
-                            <div className="mb-6 flex items-start justify-between">
+                        <CardContent className="p-4">
+                            <div className="mb-3 flex items-start justify-between">
                                 <div>
                                     <div className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                         Execution Trend
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatMicroSeconds(
                                             overview.avg_duration,
                                         )}
@@ -206,7 +206,7 @@ export default function JobsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative h-[120px] w-full">
+                            <div className="relative h-[72px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
                                         <XAxis dataKey="minute" hide />

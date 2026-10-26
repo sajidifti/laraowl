@@ -232,13 +232,13 @@ export default function FirewallOverview({
                             {/* Stats Grid */}
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-8">
                                 <Card className="group relative overflow-hidden border-border bg-card shadow-2xl">
-                                    <CardContent className="p-6">
+                                    <CardContent className="p-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-2">
                                                 <span className="block text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                                                     Allowed Requests
                                                 </span>
-                                                <div className="text-3xl font-black">
+                                                <div className="text-2xl font-black">
                                                     {formatCompactNumber(
                                                         stats.allowed,
                                                     )}
@@ -277,13 +277,13 @@ export default function FirewallOverview({
                                 </Card>
 
                                 <Card className="group relative overflow-hidden border-border bg-card shadow-2xl">
-                                    <CardContent className="p-6">
+                                    <CardContent className="p-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-2">
                                                 <span className="block text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                                                     Blocked Threats
                                                 </span>
-                                                <div className="text-3xl font-black text-red-500">
+                                                <div className="text-2xl font-black text-red-500">
                                                     {formatCompactNumber(
                                                         stats.denied +
                                                             stats.challenged,

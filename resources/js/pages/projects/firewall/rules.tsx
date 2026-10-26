@@ -207,7 +207,7 @@ export default function FirewallRules({
                                             <X className="size-4" />
                                         </Button>
                                     </CardHeader>
-                                    <CardContent className="p-6">
+                                    <CardContent className="p-4">
                                         <form
                                             onSubmit={(e) =>
                                                 addIpRule(

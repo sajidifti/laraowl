@@ -54,7 +54,7 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     <div className="mb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                         Availability
                     </div>
-                    <div className="mb-2 text-4xl font-black tracking-tighter text-foreground">
+                    <div className="mb-2 text-3xl font-black tracking-tighter text-foreground">
                         {uptime_stats.uptime_percentage}%
                     </div>
                     <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     <div className="mb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                         Avg Response Time
                     </div>
-                    <div className="mb-2 text-4xl font-black tracking-tighter text-foreground">
+                    <div className="mb-2 text-3xl font-black tracking-tighter text-foreground">
                         {Math.round(uptime_stats.avg_response_time)}ms
                     </div>
                     <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                         Response Time History
                     </div>
                 </div>
-                <CardContent className="p-8">
+                <CardContent className="p-5">
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={checks.data.slice().reverse()}>

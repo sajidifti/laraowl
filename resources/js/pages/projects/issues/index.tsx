@@ -163,14 +163,14 @@ export default function Issues({
                     <div className="space-y-6">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="border-border bg-card">
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <div className="mb-4 flex items-center justify-between">
                                         <TrendingUp className="h-5 w-5 text-blue-500" />
                                         <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-500">
                                             EFFICIENCY
                                         </span>
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {performance.resolution_rate}%
                                     </div>
                                     <div className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -180,11 +180,11 @@ export default function Issues({
                             </Card>
 
                             <Card className="border-border bg-card">
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <div className="mb-4 flex items-center justify-between">
                                         <Clock className="h-5 w-5 text-orange-500" />
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {performance.avg_resolution_time}h
                                     </div>
                                     <div className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -194,11 +194,11 @@ export default function Issues({
                             </Card>
 
                             <Card className="border-border bg-card">
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <div className="mb-4 flex items-center justify-between">
                                         <CheckCircle className="h-5 w-5 text-emerald-500" />
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatCompactNumber(
                                             performance.total_resolved,
                                         )}
@@ -210,11 +210,11 @@ export default function Issues({
                             </Card>
 
                             <Card className="border-border bg-card">
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <div className="mb-4 flex items-center justify-between">
                                         <AlertCircle className="h-5 w-5 text-red-500" />
                                     </div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatCompactNumber(
                                             performance.open_issues,
                                         )}

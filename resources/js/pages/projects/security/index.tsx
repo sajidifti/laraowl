@@ -70,13 +70,13 @@ export default function SecurityIndex({
                             key={i}
                             className="border-border bg-card/50 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/20"
                         >
-                            <CardContent className="p-6">
+                            <CardContent className="p-4">
                                 <div className="flex items-center justify-between">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
                                             {card.title}
                                         </p>
-                                        <p className="text-3xl font-black tracking-tighter text-foreground">
+                                        <p className="text-2xl font-black tracking-tighter text-foreground">
                                             {card.value}
                                         </p>
                                     </div>

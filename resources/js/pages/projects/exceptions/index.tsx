@@ -63,15 +63,15 @@ export default function ExceptionsIndex({
             <div className="space-y-8">
                 {/* Stats Card */}
                 <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                    <CardContent className="p-6">
-                        <div className="mb-6 flex items-start justify-between">
+                    <CardContent className="p-4">
+                        <div className="mb-3 flex items-start justify-between">
                             <div>
-                                <div className="text-3xl font-bold text-foreground">
+                                <div className="text-2xl font-bold text-foreground">
                                     {formatCompactNumber(overview.total)}
                                 </div>
                             </div>
                         </div>
-                        <div className="h-[150px] w-full">
+                        <div className="h-[80px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={timeSeries}>
                                     <XAxis dataKey="minute" hide />

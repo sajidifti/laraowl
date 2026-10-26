@@ -84,15 +84,15 @@ export default function ScheduledTasksIndex({
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                        <CardContent className="p-6">
-                            <div className="mb-6 flex items-start justify-between">
+                        <CardContent className="p-4">
+                            <div className="mb-3 flex items-start justify-between">
                                 <div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatCompactNumber(overview.total)}
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[120px] w-full">
+                            <div className="h-[72px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
                                         <XAxis dataKey="minute" hide />
@@ -175,17 +175,17 @@ export default function ScheduledTasksIndex({
                     </Card>
 
                     <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                        <CardContent className="p-6">
-                            <div className="mb-6 flex items-start justify-between">
+                        <CardContent className="p-4">
+                            <div className="mb-3 flex items-start justify-between">
                                 <div>
-                                    <div className="text-3xl font-bold text-foreground">
+                                    <div className="text-2xl font-bold text-foreground">
                                         {formatMicroSeconds(
                                             overview.avg_duration,
                                         )}
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[120px] w-full">
+                            <div className="h-[72px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
                                         <XAxis dataKey="minute" hide />
