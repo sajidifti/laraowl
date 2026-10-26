@@ -31,7 +31,8 @@
         }
 
         # Proxy Reverb WebSocket connection
-        handle /app* {
+        @reverb path /app/* /apps/*
+        handle @reverb {
                 reverse_proxy reverb:8080
         }
 
