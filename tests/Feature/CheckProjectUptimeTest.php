@@ -238,3 +238,13 @@ test('the health check schedule prevents overlapping runs', function () {
     expect($event->runInBackground)->toBeTrue();
     expect($event->repeatSeconds)->toBe(30);
 });
+
+test('uptime checks identify themselves so the client skips recording them', function () {
+    Project::factory()->create(['url' => 'https://example.com/up', 'last_uptime_status' => null]);
+
+    Http::fake(['*' => Http::response('OK', 200)]);
+
+    $this->artisan('projects:check-health')->assertExitCode(0);
+
+    Http::assertSent(fn ($request) => $request->hasHeader('User-Agent', 'LaraOwl-Uptime/1.0'));
+});

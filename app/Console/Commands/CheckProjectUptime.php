@@ -6,6 +6,7 @@ use App\Models\Heartbeat;
 use App\Models\Project;
 use App\Services\AlertService;
 use App\Services\IntegrationService;
+use App\Services\UptimeRequestOptions;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
@@ -36,14 +37,19 @@ class CheckProjectUptime extends Command
     protected const CONCURRENCY = 25;
 
     /**
+     * Identifies uptime checks so laraowl-client does not record them as traffic.
+     */
+    public const USER_AGENT = 'LaraOwl-Uptime/1.0';
+
+    /**
      * Execute the console command.
      *
      * The scheduler runs this command every 30 seconds, so a single run only
      * performs one round of checks and must finish well within that window.
      */
-    public function handle(AlertService $alertService): int
+    public function handle(AlertService $alertService, UptimeRequestOptions $requestOptions): int
     {
-        $this->performUptimeChecks($alertService);
+        $this->performUptimeChecks($alertService, $requestOptions);
         $this->checkHeartbeats($alertService);
 
         $this->info('Health checks completed.');
@@ -51,7 +57,7 @@ class CheckProjectUptime extends Command
         return self::SUCCESS;
     }
 
-    protected function performUptimeChecks(AlertService $alertService): void
+    protected function performUptimeChecks(AlertService $alertService, UptimeRequestOptions $requestOptions): void
     {
         $projects = Project::withUptimeMonitoring()->get()->filter(function (Project $project) {
             if (is_null($project->last_uptime_check_at)) {
@@ -66,7 +72,7 @@ class CheckProjectUptime extends Command
             $start = microtime(true);
 
             $responses = Http::pool(fn (Pool $pool) => $batch->map(
-                fn (Project $project) => $pool->retry(2, 1000, throw: false)->timeout(10)->get($project->url)
+                fn (Project $project) => $pool->retry(2, 1000, throw: false)->timeout(10)->withUserAgent(self::USER_AGENT)->withOptions($requestOptions->for($project->url))->get($project->url)
             )->all());
 
             foreach ($batch as $index => $project) {

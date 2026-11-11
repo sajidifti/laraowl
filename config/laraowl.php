@@ -48,4 +48,21 @@ return [
         'npm' => env('LARAOWL_NPM_BINARY', 'npm'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Uptime Checks
+    |--------------------------------------------------------------------------
+    |
+    | For local development, where monitored apps run on `*.localhost` sites
+    | outside the container. `localhost_address` is where those sites are
+    | reachable from here (an IP or a hostname such as host.docker.internal),
+    | and `ca_bundle` is a CA file to trust for their certificates.
+    |
+    */
+
+    'uptime' => [
+        'localhost_address' => env('UPTIME_LOCALHOST_ADDRESS'),
+        'ca_bundle' => env('UPTIME_CA_BUNDLE'),
+    ],
+
 ];
