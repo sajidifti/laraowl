@@ -1,8 +1,17 @@
 import { Link } from '@inertiajs/react';
-import { ArrowUpRight, Globe, Terminal } from 'lucide-react';
+import {
+    ArrowUpRight,
+    Check,
+    Copy,
+    Globe,
+    Terminal,
+    WrapText,
+} from 'lucide-react';
+import { useState } from 'react';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CodeBlock } from '@/components/code-block';
-import { formatValue } from '@/lib/utils';
+import { useClipboard } from '@/hooks/use-clipboard';
+import { cn, formatValue } from '@/lib/utils';
 
 export const levelColor = (level: string = 'info') => {
     const value = level.toLowerCase();
@@ -38,6 +47,111 @@ const parseContext = (context: unknown) => {
     }
 };
 
+const isEmptyValue = (value: unknown) =>
+    value == null ||
+    value === '' ||
+    (typeof value === 'object' && Object.keys(value).length === 0);
+
+/**
+ * A context/extra value as Monolog's LineFormatter prints it: compact JSON,
+ * `[]` when empty, and escaped line breaks (stack traces) rendered as real ones.
+ */
+const lineJson = (value: unknown) => {
+    if (isEmptyValue(value)) {
+        return '[]';
+    }
+
+    const json =
+        typeof value === 'object' ? JSON.stringify(value) : formatValue(value);
+
+    return json.replace(/(?<!\\)(?:\\r)?\\n/g, '\n');
+};
+
+const logTimestamp = (payload: any) => {
+    const date = payload.timestamp
+        ? new Date(Number(payload.timestamp) * 1000)
+        : null;
+
+    return date && !Number.isNaN(date.getTime())
+        ? date.toISOString().slice(0, 19).replace('T', ' ')
+        : '';
+};
+
+/**
+ * The entry the way storage/logs/laravel.log shows it:
+ * `[2026-01-01 10:00:00] ERROR: message {"context":true} []`.
+ */
+function LogLine({
+    payload,
+    context,
+    extra,
+}: {
+    payload: any;
+    context: unknown;
+    extra: unknown;
+}) {
+    const [wrapped, setWrapped] = useState(true);
+    const [copied, copy] = useClipboard();
+    const level = String(payload.level || 'info').toUpperCase();
+    const timestamp = logTimestamp(payload);
+    const tail = `${lineJson(context)} ${lineJson(extra)}`;
+    const text = `${timestamp ? `[${timestamp}] ` : ''}${level}: ${payload.message ?? ''} ${tail}`;
+
+    const button =
+        'flex size-6 items-center justify-center rounded-md border border-border bg-background/80 backdrop-blur-sm transition-colors hover:text-foreground';
+
+    return (
+        <div className="relative min-w-0">
+            <div className="absolute top-1.5 right-1.5 z-10 flex gap-1">
+                <button
+                    type="button"
+                    onClick={() => copy(text)}
+                    title="Copy log line"
+                    className={cn(button, 'text-muted-foreground')}
+                >
+                    {copied === text ? (
+                        <Check className="size-3.5 text-green-500" />
+                    ) : (
+                        <Copy className="size-3.5" />
+                    )}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setWrapped(!wrapped)}
+                    title={wrapped ? 'Disable line wrap' : 'Wrap lines'}
+                    aria-pressed={wrapped}
+                    className={cn(
+                        button,
+                        wrapped ? 'text-foreground' : 'text-muted-foreground',
+                    )}
+                >
+                    <WrapText className="size-3.5" />
+                </button>
+            </div>
+            <pre
+                className={cn(
+                    'max-h-[55vh] overflow-auto rounded-md border border-border bg-muted/40 p-3 pr-16 font-mono text-xs leading-relaxed',
+                    wrapped
+                        ? '[overflow-wrap:anywhere] break-words whitespace-pre-wrap'
+                        : 'whitespace-pre',
+                )}
+            >
+                {timestamp && (
+                    <span className="text-muted-foreground">
+                        [{timestamp}]{' '}
+                    </span>
+                )}
+                <span className={cn('font-bold', levelColor(payload.level))}>
+                    {level}
+                </span>
+                <span className="text-muted-foreground">: </span>
+                <span className="text-foreground">{payload.message}</span>{' '}
+                <span className="text-foreground/60">{tail}</span>
+            </pre>
+        </div>
+    );
+}
+
 export function LogDetails({
     payload,
     sourceHref,
@@ -45,11 +159,10 @@ export function LogDetails({
     payload: any;
     sourceHref?: string;
 }) {
+    const [view, setView] = useState<'line' | 'json'>('line');
     const context = parseContext(payload.context);
-    const isEmpty =
-        context == null ||
-        context === '' ||
-        (typeof context === 'object' && Object.keys(context).length === 0);
+    const extra = parseContext(payload.extra);
+    const isEmpty = isEmptyValue(context);
     const isCommand =
         String(payload.execution_source).toLowerCase() === 'command';
     const SourceIcon = isCommand ? Terminal : Globe;
@@ -102,10 +215,40 @@ export function LogDetails({
             </div>
 
             <div className="space-y-1.5">
-                <div className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-                    Context
+                <div className="flex items-center justify-between gap-2">
+                    <div className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                        Entry
+                    </div>
+                    <div className="inline-flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5">
+                        {(
+                            [
+                                ['line', 'Log line'],
+                                ['json', 'Context JSON'],
+                            ] as const
+                        ).map(([value, label]) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setView(value)}
+                                className={cn(
+                                    'rounded-sm px-2.5 py-0.5 text-[11px] font-semibold transition-colors',
+                                    view === value
+                                        ? 'bg-foreground text-background'
+                                        : 'text-muted-foreground hover:text-foreground',
+                                )}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                {isEmpty ? (
+                {view === 'line' ? (
+                    <LogLine
+                        payload={payload}
+                        context={context}
+                        extra={extra}
+                    />
+                ) : isEmpty ? (
                     <p className="text-xs text-muted-foreground">
                         No context provided.
                     </p>

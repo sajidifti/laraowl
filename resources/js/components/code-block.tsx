@@ -48,6 +48,14 @@ export function CodeBlock({
 }) {
     const { resolvedAppearance } = useAppearance();
     const [wrapped, setWrapped] = useState(wrapLongLines);
+    const theme = resolvedAppearance === 'light' ? oneLight : style;
+    const wrapStyle: CSSProperties = wrapped
+        ? {
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+          }
+        : { whiteSpace: 'pre', wordBreak: 'normal', overflowWrap: 'normal' };
 
     return (
         <div className="relative min-w-0">
@@ -62,11 +70,21 @@ export function CodeBlock({
             </button>
             <SyntaxHighlighter
                 language={language}
-                style={resolvedAppearance === 'light' ? oneLight : style}
+                style={theme}
                 customStyle={{
                     ...customStyle,
                     overflowX: 'auto',
-                    overflowWrap: wrapped ? 'anywhere' : 'normal',
+                    ...wrapStyle,
+                }}
+                // Themes pin `white-space: pre` on <code>, which beats the
+                // library's own wrapLongLines style, so set it explicitly.
+                codeTagProps={{
+                    className: `language-${language}`,
+                    style: {
+                        ...theme['code[class*="language-"]'],
+                        ...theme[`code[class*="language-${language}"]`],
+                        ...wrapStyle,
+                    },
                 }}
                 wrapLines={wrapLines}
                 wrapLongLines={wrapped}
