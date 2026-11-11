@@ -287,9 +287,9 @@ export default function ProjectSettings({
         <>
             <Head title="Project Settings" />
 
-            <div className="animate-in space-y-8 duration-700 fade-in">
+            <div className="animate-in space-y-5 duration-700 fade-in">
                 <div>
-                    <h1 className="text-3xl font-black tracking-tight text-foreground">
+                    <h1 className="text-2xl font-black tracking-tight text-foreground">
                         Project Settings
                     </h1>
                     <p className="mt-1 text-muted-foreground">
@@ -303,44 +303,44 @@ export default function ProjectSettings({
                     onValueChange={setActiveTab}
                     className="w-full"
                 >
-                    <TabsList className="mb-8 rounded-xl bg-muted p-1">
+                    <TabsList className="mb-5 rounded-xl bg-muted p-1">
                         <TabsTrigger
                             value="general"
-                            className="rounded-lg px-6"
+                            className="rounded-lg px-4"
                         >
                             General
                         </TabsTrigger>
                         <TabsTrigger
                             value="integrations"
-                            className="rounded-lg px-6"
+                            className="rounded-lg px-4"
                         >
                             Integrations
                         </TabsTrigger>
-                        <TabsTrigger value="alerts" className="rounded-lg px-6">
+                        <TabsTrigger value="alerts" className="rounded-lg px-4">
                             Alert Rules
                         </TabsTrigger>
                         <TabsTrigger
                             value="thresholds"
-                            className="rounded-lg px-6"
+                            className="rounded-lg px-4"
                         >
                             Thresholds
                         </TabsTrigger>
-                        <TabsTrigger value="api" className="rounded-lg px-6">
+                        <TabsTrigger value="api" className="rounded-lg px-4">
                             API Keys
                         </TabsTrigger>
                         <TabsTrigger
                             value="cloudflare"
                             id="cloudflare"
-                            className="rounded-lg px-6"
+                            className="rounded-lg px-4"
                         >
                             Cloudflare
                         </TabsTrigger>
                     </TabsList>
 
                     {/* Thresholds */}
-                    <TabsContent value="thresholds" className="space-y-6">
-                        <Card className="border-border bg-card p-8 shadow-2xl">
-                            <Badge className="mb-6 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground uppercase">
+                    <TabsContent value="thresholds" className="space-y-4">
+                        <Card className="border-border bg-card p-5 shadow-xs">
+                            <Badge className="mb-4 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground uppercase">
                                 Setting up thresholds
                             </Badge>
                             <h3 className="mb-2 text-xl font-black tracking-tight text-foreground">
@@ -355,7 +355,7 @@ export default function ProjectSettings({
                         </Card>
 
                         {/* Routes Thresholds */}
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader>
                                 <CardTitle className="text-lg font-bold text-foreground">
                                     Routes
@@ -370,7 +370,7 @@ export default function ProjectSettings({
                                             className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Globe className="h-4 w-4 text-blue-400" />
+                                                <Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                 <div>
                                                     <div className="text-sm font-bold text-foreground">
                                                         {t.key}
@@ -433,7 +433,7 @@ export default function ProjectSettings({
                         </Card>
 
                         {/* Jobs Thresholds */}
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-lg font-bold text-foreground">
                                     Jobs
@@ -448,7 +448,7 @@ export default function ProjectSettings({
                                             className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Zap className="h-4 w-4 text-emerald-400" />
+                                                <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                                 <div>
                                                     <div className="text-sm font-bold text-foreground">
                                                         {t.key}
@@ -511,7 +511,7 @@ export default function ProjectSettings({
                         </Card>
 
                         {/* Commands Thresholds */}
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader>
                                 <CardTitle className="text-lg font-bold text-foreground">
                                     Commands
@@ -526,7 +526,7 @@ export default function ProjectSettings({
                                             className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Terminal className="h-4 w-4 text-orange-400" />
+                                                <Terminal className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                                                 <div>
                                                     <div className="text-sm font-bold text-foreground">
                                                         {t.key}
@@ -589,7 +589,7 @@ export default function ProjectSettings({
                         </Card>
 
                         {/* Scheduled Tasks Thresholds */}
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader>
                                 <CardTitle className="text-lg font-bold text-foreground">
                                     Scheduled Tasks
@@ -606,7 +606,7 @@ export default function ProjectSettings({
                                             className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Clock className="h-4 w-4 text-purple-400" />
+                                                <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                                                 <div>
                                                     <div className="text-sm font-bold text-foreground">
                                                         {t.key}
@@ -669,7 +669,7 @@ export default function ProjectSettings({
                         </Card>
 
                         {/* Queries Thresholds */}
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader>
                                 <CardTitle className="text-lg font-bold text-foreground">
                                     Database Queries
@@ -684,7 +684,7 @@ export default function ProjectSettings({
                                             className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Globe className="h-4 w-4 text-cyan-400" />
+                                                <Globe className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                                                 <div>
                                                     <div className="max-w-md truncate text-sm font-bold text-foreground">
                                                         {t.key}
@@ -751,8 +751,8 @@ export default function ProjectSettings({
 
                     {/* General Settings */}
                     <TabsContent value="general">
-                        <div className="space-y-6">
-                            <Card className="border-border bg-card shadow-2xl">
+                        <div className="space-y-4">
+                            <Card className="border-border bg-card shadow-xs">
                                 <CardHeader>
                                     <CardTitle className="text-foreground">
                                         General Information
@@ -764,9 +764,9 @@ export default function ProjectSettings({
                                 <CardContent>
                                     <form
                                         onSubmit={handleUpdateProject}
-                                        className="space-y-6"
+                                        className="space-y-4"
                                     >
-                                        <div className="flex flex-col gap-8 md:flex-row">
+                                        <div className="flex flex-col gap-5 md:flex-row">
                                             {/* Logo Upload */}
                                             <div className="flex flex-col items-center gap-4">
                                                 <div className="group relative">
@@ -1070,7 +1070,7 @@ export default function ProjectSettings({
                                                     to confirm.
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <div className="space-y-4 py-4">
+                                            <div className="space-y-4 py-2.5">
                                                 <Input
                                                     value={deleteConfirm}
                                                     onChange={(e) =>
@@ -1117,7 +1117,7 @@ export default function ProjectSettings({
                             }}
                         >
                             <Tabs defaultValue="marketplace" className="w-full">
-                                <div className="mb-8 flex items-center justify-between">
+                                <div className="mb-5 flex items-center justify-between">
                                     <div>
                                         <h2 className="text-2xl font-black tracking-tight text-foreground">
                                             Integrations
@@ -1130,13 +1130,13 @@ export default function ProjectSettings({
                                     <TabsList className="rounded-xl border border-border bg-muted p-1">
                                         <TabsTrigger
                                             value="marketplace"
-                                            className="h-9 rounded-lg px-6 text-[10px] font-black tracking-widest uppercase"
+                                            className="h-9 rounded-lg px-4 text-[10px] font-black tracking-widest uppercase"
                                         >
                                             Marketplace
                                         </TabsTrigger>
                                         <TabsTrigger
                                             value="configurations"
-                                            className="h-9 rounded-lg px-6 text-[10px] font-black tracking-widest uppercase"
+                                            className="h-9 rounded-lg px-4 text-[10px] font-black tracking-widest uppercase"
                                         >
                                             Configurations
                                             {(integrations?.length || 0) >
@@ -1150,7 +1150,7 @@ export default function ProjectSettings({
                                 </div>
 
                                 <TabsContent value="marketplace">
-                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                         {[
                                             {
                                                 id: 'slack',
@@ -1197,15 +1197,15 @@ export default function ProjectSettings({
                                             return (
                                                 <Card
                                                     key={item.id}
-                                                    className="group relative overflow-hidden border-border bg-card shadow-2xl transition-all duration-500 hover:border-primary/50"
+                                                    className="group relative overflow-hidden border-border bg-card shadow-xs transition-all duration-500 hover:border-primary/50"
                                                 >
                                                     {/* Glow Effect */}
                                                     <div
                                                         className={`absolute -top-10 -left-10 h-32 w-32 bg-gradient-to-br ${item.color} opacity-50 blur-[60px] transition-opacity group-hover:opacity-100`}
                                                     />
 
-                                                    <CardContent className="relative z-10 p-8">
-                                                        <div className="mb-6 flex items-start justify-between">
+                                                    <CardContent className="relative z-10 p-5">
+                                                        <div className="mb-4 flex items-start justify-between">
                                                             <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted shadow-inner transition-transform duration-500 group-hover:scale-110">
                                                                 <item.icon className="h-7 w-7 text-primary" />
                                                             </div>
@@ -1365,7 +1365,7 @@ export default function ProjectSettings({
                                                                             int,
                                                                         )
                                                                     }
-                                                                    className="h-8 w-8 rounded-lg border border-border/50 text-blue-400 hover:bg-blue-400/10"
+                                                                    className="h-8 w-8 rounded-lg border border-border/50 text-blue-600 hover:bg-blue-400/10 dark:text-blue-400"
                                                                 >
                                                                     <Pencil className="h-3.5 w-3.5" />
                                                                 </Button>
@@ -1419,7 +1419,7 @@ export default function ProjectSettings({
                                 {selectedType && (
                                     <form
                                         onSubmit={handleAddIntegration}
-                                        className="space-y-4 py-4"
+                                        className="space-y-4 py-2.5"
                                     >
                                         <div className="space-y-2">
                                             <Label>Integration Name</Label>
@@ -1507,7 +1507,7 @@ export default function ProjectSettings({
                     </TabsContent>
 
                     {/* Alert Rules */}
-                    <TabsContent value="alerts" className="space-y-6">
+                    <TabsContent value="alerts" className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold text-foreground">
                                 Smart Alert Rules
@@ -1526,7 +1526,7 @@ export default function ProjectSettings({
                                 <DialogTrigger asChild>
                                     <Button
                                         size="sm"
-                                        className="gap-2 rounded-xl bg-white/10 font-bold text-foreground hover:bg-white/20"
+                                        className="gap-2 rounded-xl bg-foreground/10 font-bold text-foreground hover:bg-foreground/20"
                                     >
                                         <Plus className="h-4 w-4" /> Create Rule
                                     </Button>
@@ -1544,7 +1544,7 @@ export default function ProjectSettings({
                                     </DialogHeader>
                                     <form
                                         onSubmit={handleAddRule}
-                                        className="space-y-4 py-4"
+                                        className="space-y-4 py-2.5"
                                     >
                                         <div className="space-y-2">
                                             <Label>Rule Name</Label>
@@ -1842,7 +1842,7 @@ export default function ProjectSettings({
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-6 w-6 rounded-md text-blue-400 hover:bg-blue-400/10"
+                                                        className="h-6 w-6 rounded-md text-blue-600 hover:bg-blue-400/10 dark:text-blue-400"
                                                         onClick={() =>
                                                             handleEditRule(rule)
                                                         }
@@ -1908,7 +1908,7 @@ export default function ProjectSettings({
 
                     {/* API Keys */}
                     <TabsContent value="api">
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <CardHeader>
                                 <CardTitle className="text-foreground">
                                     API Configuration
@@ -1918,7 +1918,7 @@ export default function ProjectSettings({
                                     application to Laraowl.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label>Project Token</Label>
                                     <div className="flex gap-2">
@@ -1930,7 +1930,7 @@ export default function ProjectSettings({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-10 w-10 rounded-xl bg-muted hover:bg-white/10"
+                                            className="h-10 w-10 rounded-xl bg-muted hover:bg-foreground/10"
                                             onClick={() => {
                                                 navigator.clipboard.writeText(
                                                     project.api_token,
@@ -1952,8 +1952,8 @@ export default function ProjectSettings({
 
                     {/* Cloudflare Settings */}
                     <TabsContent value="cloudflare">
-                        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-                            <Card className="overflow-hidden shadow-2xl lg:col-span-7">
+                        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
+                            <Card className="overflow-hidden shadow-xs lg:col-span-7">
                                 <CardHeader>
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 shadow-lg">
@@ -1971,12 +1971,12 @@ export default function ProjectSettings({
                                         </div>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <form
                                         onSubmit={handleUpdateCloudflare}
-                                        className="space-y-8"
+                                        className="space-y-5"
                                     >
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             <div className="space-y-3">
                                                 <Label
                                                     htmlFor="api_token"
@@ -2128,8 +2128,8 @@ export default function ProjectSettings({
                                         </h4>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="p-6">
-                                    <div className="space-y-6">
+                                <CardContent className="p-4">
+                                    <div className="space-y-4">
                                         <div className="space-y-4">
                                             {[
                                                 {
@@ -2269,7 +2269,7 @@ function ThresholdForm({
     };
 
     return (
-        <form onSubmit={submit} className="space-y-4 py-4">
+        <form onSubmit={submit} className="space-y-4 py-2.5">
             <div className="space-y-2">
                 <Label>{getLabel()}</Label>
                 <Input

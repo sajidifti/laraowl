@@ -141,7 +141,7 @@ export function TimeFilter() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-[280px] border border-border bg-background p-4 shadow-2xl backdrop-blur-xl sm:w-80 sm:p-5"
+                    className="w-[280px] border border-border bg-background p-4 shadow-xs backdrop-blur-xl sm:w-80 sm:p-5"
                     align="end"
                 >
                     <div className="space-y-4 sm:space-y-5">

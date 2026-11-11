@@ -8,9 +8,12 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { RelatedRecordsTable } from '@/components/related-records-table';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -20,14 +23,19 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showCommand } from '@/routes/commands';
+import { show as showRecord } from '@/routes/records';
 
 export default function CommandsIndex({
     commands,
+    search,
+    view = 'raw',
     timeSeries = [],
     overview,
     period,
@@ -35,6 +43,8 @@ export default function CommandsIndex({
     to,
 }: {
     commands: any;
+    search?: string | null;
+    view?: string;
     timeSeries: any;
     overview: any;
     period?: string | null;
@@ -64,14 +74,14 @@ export default function CommandsIndex({
         <>
             <Head title="Commands" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
-                            <div className="mb-3 flex items-start justify-between">
+                            <div className="mb-3 flex items-start justify-between gap-3">
                                 <div>
                                     <div className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                         Calls (Current View)
@@ -80,7 +90,7 @@ export default function CommandsIndex({
                                         {formatCompactNumber(overview.total)}
                                     </div>
                                 </div>
-                                <div className="flex gap-4 text-[10px] font-bold tracking-tighter uppercase">
+                                <div className="flex flex-wrap justify-end gap-x-4 gap-y-1 text-[10px] font-bold tracking-tighter uppercase">
                                     <div className="flex items-center gap-1.5">
                                         <span className="h-2 w-2 rounded-full bg-red-500"></span>{' '}
                                         Unsuccessful{' '}
@@ -101,10 +111,11 @@ export default function CommandsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Runs')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -166,7 +177,7 @@ export default function CommandsIndex({
                                         <Bar
                                             dataKey="ok"
                                             name="Success"
-                                            fill="rgba(255,255,255,0.4)"
+                                            fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                             radius={[2, 2, 0, 0]}
                                             stackId="a"
                                         />
@@ -183,9 +194,9 @@ export default function CommandsIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
-                            <div className="mb-3 flex items-start justify-between">
+                            <div className="mb-3 flex items-start justify-between gap-3">
                                 <div>
                                     <div className="text-2xl font-bold text-foreground">
                                         {formatMicroSeconds(
@@ -194,10 +205,16 @@ export default function CommandsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative h-[72px] w-full">
+                            <div className="relative h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis
+                                            {...valueAxis(
+                                                'Avg duration',
+                                                formatDuration,
+                                            )}
+                                        />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -217,10 +234,11 @@ export default function CommandsIndex({
                                                             <div className="flex items-center gap-2">
                                                                 <div className="h-2 w-2 rounded-full bg-orange-500" />
                                                                 <span className="text-[10px] font-medium text-muted-foreground uppercase">
-                                                                    Calls:
+                                                                    Avg
+                                                                    Duration:
                                                                 </span>
                                                                 <span className="text-[10px] font-bold text-foreground">
-                                                                    {formatCompactNumber(
+                                                                    {formatMicroSeconds(
                                                                         payload[0]
                                                                             .value,
                                                                     )}
@@ -235,8 +253,8 @@ export default function CommandsIndex({
                                         />
                                         <Area
                                             type="monotone"
-                                            dataKey="total"
-                                            name="Total Calls"
+                                            dataKey="avg_duration"
+                                            name="Avg Duration"
                                             stroke="#f97316"
                                             fill="#f97316"
                                             fillOpacity={0.1}
@@ -251,22 +269,59 @@ export default function CommandsIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <ViewPills
+                                current={view}
+                                views={[
+                                    { value: 'raw', label: 'Raw' },
+                                    { value: 'grouped', label: 'By Command' },
+                                ]}
+                            />
+                            <SearchInput
+                                value={search}
+                                placeholder={
+                                    view === 'raw'
+                                        ? 'Search command, arguments...'
+                                        : 'Search command...'
+                                }
+                            />
+                        </div>
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-                            <span>{commands.total || 0} Commands</span>
+                            <span>
+                                {formatCompactNumber(commands.total || 0)}{' '}
+                                {view === 'raw' ? 'Runs' : 'Commands'}
+                            </span>
                         </div>
                     </div>
 
                     <div className="overflow-hidden rounded-lg border border-border bg-card">
-                        {data.length > 0 ? (
+                        {data.length > 0 && view === 'raw' ? (
+                            <>
+                                <RelatedRecordsTable
+                                    type="command"
+                                    records={data}
+                                    hrefFor={(record) =>
+                                        showRecord.url({
+                                            current_team: teamSlug,
+                                            project: projectSlug,
+                                            record,
+                                        })
+                                    }
+                                    showDate
+                                />
+                                <Pagination
+                                    links={commands.links}
+                                    meta={commands}
+                                />
+                            </>
+                        ) : data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                Command
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Command</TableHead>
                                             <TableHead className="text-right">
                                                 Success
                                             </TableHead>
@@ -279,7 +334,7 @@ export default function CommandsIndex({
                                             <TableHead className="text-right">
                                                 Avg
                                             </TableHead>
-                                            <TableHead className="pr-6 text-right">
+                                            <TableHead className="text-right">
                                                 P95
                                             </TableHead>
                                         </TableRow>
@@ -290,15 +345,16 @@ export default function CommandsIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6">
+                                                <TableCell className="w-full max-w-0">
                                                     <Link
                                                         href={commandDetailsHref(
                                                             cmd.hash,
                                                         )}
+                                                        title={cmd.command_name}
                                                     >
                                                         <div className="flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80">
-                                                            <Terminal className="h-3 w-3 text-muted-foreground/50" />
-                                                            <span className="font-mono text-xs text-foreground/90">
+                                                            <Terminal className="h-3 w-3 shrink-0 text-muted-foreground/50" />
+                                                            <span className="truncate font-mono text-xs text-foreground/90">
                                                                 {
                                                                     cmd.command_name
                                                                 }
@@ -333,7 +389,7 @@ export default function CommandsIndex({
                                                         cmd.avg_duration,
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                                                <TableCell className="text-right font-mono text-xs font-bold text-foreground">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <span>
                                                             {formatMicroSeconds(

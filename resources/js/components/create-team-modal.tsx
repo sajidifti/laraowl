@@ -27,7 +27,7 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                 <Form
                     key={String(open)}
                     {...store.form()}
-                    className="space-y-6"
+                    className="space-y-4"
                     onSuccess={() => setOpen(false)}
                 >
                     {({ errors, processing }) => (

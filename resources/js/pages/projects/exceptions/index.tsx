@@ -1,8 +1,18 @@
 ﻿import { Head, Link, usePage } from '@inertiajs/react';
 import { AlertCircle, ArrowUpRight } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { HANDLED_FILTER, RecordFilters } from '@/components/record-filters';
+import { RelatedRecordsTable } from '@/components/related-records-table';
+import { SearchInput } from '@/components/search-input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -13,14 +23,20 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatCompactNumber } from '@/lib/utils';
 import { show as showException } from '@/routes/exceptions';
+import { show as showRecord } from '@/routes/records';
 
 export default function ExceptionsIndex({
     exceptions,
+    search,
+    view = 'raw',
+    filters = {},
     timeSeries = [],
     overview,
     period,
@@ -28,6 +44,9 @@ export default function ExceptionsIndex({
     to,
 }: {
     exceptions: any;
+    search?: string | null;
+    view?: string;
+    filters?: Record<string, string | null>;
     timeSeries: any;
     stats: any;
     overview: any;
@@ -58,11 +77,11 @@ export default function ExceptionsIndex({
         <>
             <Head title="Exceptions" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Card */}
-                <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <Card className="overflow-hidden border-border bg-card shadow-xs">
                     <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                             <div>
@@ -71,10 +90,11 @@ export default function ExceptionsIndex({
                                 </div>
                             </div>
                         </div>
-                        <div className="h-[80px] w-full">
+                        <div className="h-[150px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={timeSeries}>
-                                    <XAxis dataKey="minute" hide />
+                                    <XAxis {...timeAxis()} />
+                                    <YAxis {...valueAxis('Exceptions')} />
                                     <Tooltip
                                         content={({ active, payload }) => {
                                             if (
@@ -124,31 +144,72 @@ export default function ExceptionsIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 font-bold text-foreground">
-                            <span className="text-lg">
-                                {formatCompactNumber(exceptions.total || 0)}{' '}
-                                Unique Exceptions
-                            </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <ViewPills
+                                current={view}
+                                views={[
+                                    { value: 'raw', label: 'Raw' },
+                                    { value: 'grouped', label: 'By Exception' },
+                                ]}
+                            />
+                            <SearchInput
+                                value={search}
+                                placeholder={
+                                    view === 'raw'
+                                        ? 'Search class, message, file...'
+                                        : 'Search class or message...'
+                                }
+                            />
+                            {view === 'raw' && (
+                                <RecordFilters
+                                    filters={[HANDLED_FILTER]}
+                                    values={filters}
+                                />
+                            )}
                         </div>
+                        <span className="font-bold text-foreground">
+                            {formatCompactNumber(exceptions.total || 0)}{' '}
+                            {view === 'raw'
+                                ? 'Occurrences'
+                                : 'Unique Exceptions'}
+                        </span>
                     </div>
 
                     <div className="overflow-hidden rounded-lg border border-border bg-card">
-                        {data.length > 0 ? (
+                        {data.length > 0 && view === 'raw' ? (
+                            <>
+                                <RelatedRecordsTable
+                                    type="exception"
+                                    records={data}
+                                    hrefFor={(record) =>
+                                        showRecord.url({
+                                            current_team: teamSlug,
+                                            project: projectSlug,
+                                            record,
+                                        })
+                                    }
+                                    showDate
+                                    showSource
+                                />
+                                <Pagination
+                                    links={exceptions.links}
+                                    meta={exceptions}
+                                />
+                            </>
+                        ) : data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border hover:bg-transparent">
-                                            <TableHead className="w-[150px] pl-6 text-[10px] font-bold text-muted-foreground uppercase">
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[150px]">
                                                 Last Seen
                                             </TableHead>
-                                            <TableHead className="text-[10px] font-bold text-muted-foreground uppercase">
-                                                Exception
-                                            </TableHead>
-                                            <TableHead className="w-[100px] text-right text-[10px] font-bold text-muted-foreground uppercase">
+                                            <TableHead>Exception</TableHead>
+                                            <TableHead className="w-[100px] text-right">
                                                 Count
                                             </TableHead>
-                                            <TableHead className="w-[100px] pr-6 text-right text-[10px] font-bold text-muted-foreground uppercase">
+                                            <TableHead className="w-[100px] text-right">
                                                 Users
                                             </TableHead>
                                         </TableRow>
@@ -159,7 +220,7 @@ export default function ExceptionsIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6 font-mono text-xs text-muted-foreground">
+                                                <TableCell className="font-mono text-xs text-muted-foreground">
                                                     {new Date(
                                                         exc.last_seen,
                                                     ).toLocaleString()}
@@ -190,7 +251,7 @@ export default function ExceptionsIndex({
                                                         exc.total_count || 0,
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="pr-6 text-right font-mono text-xs text-foreground/60">
+                                                <TableCell className="text-right font-mono text-xs text-foreground/60">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <span>
                                                             {formatCompactNumber(

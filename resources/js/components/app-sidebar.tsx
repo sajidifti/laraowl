@@ -76,191 +76,107 @@ export function AppSidebar() {
           ? `/${teamSlug}/projects/create`
           : '/';
 
-    const activityNavItems: NavItem[] = [
-        {
-            title: 'Requests',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/requests`),
-            icon: Activity,
-        },
-        {
-            title: 'Jobs',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/jobs`),
-            icon: Repeat,
-        },
-        {
-            title: 'Commands',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/commands`),
-            icon: Terminal,
-        },
-        {
-            title: 'Scheduled Tasks',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/scheduled-tasks`),
-            icon: Calendar,
-        },
-        {
-            title: 'Exceptions',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/exceptions`),
-            icon: Zap,
-        },
-        {
-            title: 'Queries',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/queries`),
-            icon: Search,
-        },
-        {
-            title: 'Notifications',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/notifications`),
-            icon: Bell,
-        },
-        {
-            title: 'Mail',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/mail`),
-            icon: Mail,
-        },
-        {
-            title: 'Cache',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/cache`),
-            icon: Database,
-        },
-        {
-            title: 'Outgoing Requests',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/outgoing-requests`),
-            icon: ExternalLink,
-        },
-    ];
+    const projectUrl = (path: string) =>
+        withPeriod(`/${teamSlug}/${projectSlug}/${path}`);
+    const item = (title: string, path: string, icon: NavItem['icon']) => ({
+        title,
+        href: projectUrl(path),
+        icon,
+    });
 
     const uptimeEnabled = currentProject?.uptime_monitoring_enabled ?? true;
 
-    const monitoringNavItems: NavItem[] = [
+    const navGroups: { label: string; items: NavItem[] }[] = [
         {
-            title: 'Users',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/users`),
-            icon: Users,
-        },
-        ...(uptimeEnabled
-            ? [
-                  {
-                      title: 'Uptime',
-                      href: withPeriod(`/${teamSlug}/${projectSlug}/uptime`),
-                      icon: Globe,
-                  },
-              ]
-            : []),
-        {
-            title: 'Logs',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/logs`),
-            icon: FileText,
-        },
-    ];
-
-    const securityNavItems: NavItem[] = [
-        {
-            title: 'Security',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/security`),
-            icon: Shield,
-        },
-        {
-            title: 'Firewall',
-            href: withPeriod(`/${teamSlug}/${projectSlug}/firewall`),
-            icon: LockIcon,
+            label: 'Overview',
             items: [
-                {
-                    title: 'Overview',
-                    href: withPeriod(`/${teamSlug}/${projectSlug}/firewall`),
-                },
-                {
-                    title: 'Traffic',
-                    href: withPeriod(
-                        `/${teamSlug}/${projectSlug}/firewall/traffic`,
-                    ),
-                },
-                {
-                    title: 'Rules',
-                    href: withPeriod(
-                        `/${teamSlug}/${projectSlug}/firewall/rules`,
-                    ),
-                },
-                {
-                    title: 'Audit Log',
-                    href: withPeriod(
-                        `/${teamSlug}/${projectSlug}/firewall/audit`,
-                    ),
-                },
+                { title: 'Dashboard', href: dashboardUrl, icon: LayoutGrid },
+                item('Issues', 'issues', AlertCircle),
+                item('Exceptions', 'exceptions', Zap),
+                item('Logs', 'logs', FileText),
+            ],
+        },
+        {
+            label: 'Traffic',
+            items: [
+                item('Requests', 'requests', Activity),
+                item('Outgoing Requests', 'outgoing-requests', ExternalLink),
+                item('Users', 'users', Users),
+                ...(uptimeEnabled ? [item('Uptime', 'uptime', Globe)] : []),
+            ],
+        },
+        {
+            label: 'Data',
+            items: [
+                item('Queries', 'queries', Search),
+                item('Cache', 'cache', Database),
+            ],
+        },
+        {
+            label: 'Background',
+            items: [
+                item('Jobs', 'jobs', Repeat),
+                item('Scheduled Tasks', 'scheduled-tasks', Calendar),
+                item('Commands', 'commands', Terminal),
+            ],
+        },
+        {
+            label: 'Messaging',
+            items: [
+                item('Mail', 'mail', Mail),
+                item('Notifications', 'notifications', Bell),
+            ],
+        },
+        {
+            label: 'Security',
+            items: [
+                item('Security', 'security', Shield),
+                item('Firewall', 'firewall', LockIcon),
             ],
         },
     ];
 
     return (
-        <Sidebar
-            collapsible="icon"
-            variant="inset"
-            className="border-r border-sidebar-border bg-sidebar"
-        >
-            <SidebarHeader className="px-4 pt-4 pb-2">
+        <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+            <SidebarHeader className="gap-2 border-b border-sidebar-border p-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
-                            size="lg"
                             asChild
-                            className="hover:bg-transparent"
+                            className="h-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-transparent"
                         >
-                            <Link
-                                href={dashboardUrl}
-                                prefetch
-                                className="flex items-center gap-3"
-                            >
+                            <Link href={dashboardUrl} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-
-                <div className="mt-4 px-2">
-                    <WorkspaceSwitcher />
-                </div>
+                <WorkspaceSwitcher />
             </SidebarHeader>
 
-            <SidebarContent className="px-2 pt-4">
-                <div className="space-y-4">
+            <SidebarContent className="custom-scrollbar gap-0 py-1">
+                {navGroups.map((group) => (
                     <NavMain
-                        items={[
-                            {
-                                title: 'Dashboard',
-                                href: dashboardUrl,
-                                icon: LayoutGrid,
-                            },
-                            {
-                                title: 'Issues',
-                                href: withPeriod(
-                                    `/${teamSlug}/${projectSlug}/issues`,
-                                ),
-                                icon: AlertCircle,
-                            },
-                        ]}
-                        label="Platform"
+                        key={group.label}
+                        items={group.items}
+                        label={group.label}
                     />
-
-                    <NavMain items={activityNavItems} label="Activity" />
-
-                    <NavMain items={securityNavItems} label="Security" />
-
-                    <NavMain items={monitoringNavItems} label="Monitoring" />
-
-                    <NavMain
-                        items={[
-                            {
-                                title: 'Project Settings',
-                                href: `/${teamSlug}/${projectSlug}/settings`,
-                                icon: Settings,
-                            },
-                        ]}
-                        label="Settings"
-                    />
-                </div>
+                ))}
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-sidebar-border p-4">
-                <NavUser />
+            <SidebarFooter className="gap-0 border-t border-sidebar-border px-0 py-1">
+                <NavMain
+                    items={[
+                        {
+                            title: 'Project Settings',
+                            href: `/${teamSlug}/${projectSlug}/settings`,
+                            icon: Settings,
+                        },
+                    ]}
+                />
+                <div className="px-2">
+                    <NavUser />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

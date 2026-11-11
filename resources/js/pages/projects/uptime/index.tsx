@@ -8,11 +8,27 @@ import {
     History,
     RefreshCw,
 } from 'lucide-react';
-import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+    AreaChart,
+    Area,
+    Tooltip,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatIsoTime, timeAxis, valueAxis } from '@/lib/chart-axes';
 
 export default function UptimeIndex({ checks, uptime_stats, period }: any) {
     const { props }: any = usePage();
@@ -25,7 +41,7 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
             <>
                 <Head title={`Uptime - ${currentProject?.name}`} />
 
-                <Card className="border-border bg-card p-12 shadow-2xl">
+                <Card className="border-border bg-card p-12 shadow-xs">
                     <div className="flex flex-col items-center justify-center gap-4 text-center">
                         <Globe className="size-12 text-muted-foreground/30" />
                         <div className="text-2xl font-black tracking-tighter text-foreground">
@@ -46,15 +62,15 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
             <Head title={`Uptime - ${currentProject?.name}`} />
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <Card className="group relative overflow-hidden border-border bg-card p-8 shadow-2xl">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Card className="group relative overflow-hidden border-border bg-card p-5 shadow-xs">
                     <div className="absolute top-0 right-0 p-4 opacity-5 transition-opacity group-hover:opacity-10">
                         <CheckCircle2 className="size-24 text-emerald-500" />
                     </div>
                     <div className="mb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                         Availability
                     </div>
-                    <div className="mb-2 text-3xl font-black tracking-tighter text-foreground">
+                    <div className="mb-2 text-2xl font-black tracking-tighter text-foreground">
                         {uptime_stats.uptime_percentage}%
                     </div>
                     <div className="flex items-center gap-2">
@@ -67,14 +83,14 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     </div>
                 </Card>
 
-                <Card className="group relative overflow-hidden border-border bg-card p-8 shadow-2xl">
+                <Card className="group relative overflow-hidden border-border bg-card p-5 shadow-xs">
                     <div className="absolute top-0 right-0 p-4 opacity-5 transition-opacity group-hover:opacity-10">
                         <Timer className="size-24 text-blue-500" />
                     </div>
                     <div className="mb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                         Avg Response Time
                     </div>
-                    <div className="mb-2 text-3xl font-black tracking-tighter text-foreground">
+                    <div className="mb-2 text-2xl font-black tracking-tighter text-foreground">
                         {Math.round(uptime_stats.avg_response_time)}ms
                     </div>
                     <div className="flex items-center gap-2">
@@ -85,7 +101,7 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     </div>
                 </Card>
 
-                <Card className="group relative overflow-hidden border-border bg-card p-8 shadow-2xl">
+                <Card className="group relative overflow-hidden border-border bg-card p-5 shadow-xs">
                     <div className="absolute top-0 right-0 p-4 opacity-5 transition-opacity group-hover:opacity-10">
                         <RefreshCw className="size-24 text-primary" />
                     </div>
@@ -109,8 +125,8 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
             </div>
 
             {/* History Chart */}
-            <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                <div className="border-b border-border/50 p-8">
+            <Card className="overflow-hidden border-border bg-card shadow-xs">
+                <div className="border-b border-border/50 p-5">
                     <div className="flex items-center gap-2 text-xs font-black tracking-widest text-foreground uppercase">
                         <ActivityIcon className="size-3.5 text-muted-foreground" />
                         Response Time History
@@ -120,6 +136,15 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={checks.data.slice().reverse()}>
+                                <XAxis
+                                    {...timeAxis('checked_at', formatIsoTime)}
+                                />
+                                <YAxis
+                                    {...valueAxis(
+                                        'Response time',
+                                        (value) => `${value}ms`,
+                                    )}
+                                />
                                 <defs>
                                     <linearGradient
                                         id="colorResponse"
@@ -194,32 +219,24 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                     Check History
                 </div>
 
-                <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <Card className="overflow-hidden border-border bg-card shadow-xs">
                     <div className="overflow-x-auto">
-                        <table className="w-full border-collapse text-left">
-                            <thead>
-                                <tr className="border-b border-border/50 bg-muted/30">
-                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Status
-                                    </th>
-                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Response Time
-                                    </th>
-                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Status Code
-                                    </th>
-                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Checked At
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/50">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Response Time</TableHead>
+                                    <TableHead>Status Code</TableHead>
+                                    <TableHead>Checked At</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {checks.data.map((check: any) => (
-                                    <tr
+                                    <TableRow
                                         key={check.id}
                                         className="group transition-colors hover:bg-muted/30"
                                     >
-                                        <td className="px-6 py-4">
+                                        <TableCell>
                                             <div className="flex items-center gap-2">
                                                 {check.status === 'up' ? (
                                                     <Badge className="border-emerald-500/20 bg-emerald-500/10 text-[9px] font-black tracking-widest text-emerald-500 uppercase">
@@ -231,29 +248,29 @@ export default function UptimeIndex({ checks, uptime_stats, period }: any) {
                                                     </Badge>
                                                 )}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell>
                                             <span className="text-sm font-black text-foreground">
                                                 {check.response_time}ms
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4">
+                                        </TableCell>
+                                        <TableCell>
                                             <span className="text-xs font-bold text-muted-foreground">
                                                 {check.status_code || '—'}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-medium text-muted-foreground/60">
+                                        </TableCell>
+                                        <TableCell className="text-xs font-medium text-muted-foreground/60">
                                             {new Date(
                                                 check.checked_at,
                                             ).toLocaleString()}
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                     {checks.links && checks.links.length > 3 && (
-                        <div className="flex justify-end gap-2 border-t border-border/50 p-6">
+                        <div className="flex justify-end gap-2 border-t border-border/50 p-4">
                             {/* Pagination could go here */}
                         </div>
                     )}

@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { formatIsoTime, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { formatCompactNumber } from '@/lib/utils';
 import { show as showSecurityThreat } from '@/routes/security';
 import { ConnectCloudflare } from './components/connect-cloudflare';
@@ -161,7 +162,7 @@ export default function FirewallOverview({
         <div>
             <Head title="Firewall Overview" />
 
-            <div className="animate-in space-y-8 duration-700 fade-in slide-in-from-bottom-4">
+            <div className="animate-in space-y-5 duration-700 fade-in slide-in-from-bottom-4">
                 {/* Secondary Nav */}
                 <div className="flex items-center gap-1 border-b border-border/50 pb-4">
                     {navItems.map((item) => (
@@ -183,13 +184,13 @@ export default function FirewallOverview({
                 {!isConfigured ? (
                     <ConnectCloudflare />
                 ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-5">
                         {/* Hero Section */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                             {/* Security Score Card */}
-                            <Card className="group relative overflow-hidden border-border bg-card shadow-2xl lg:col-span-4">
+                            <Card className="group relative overflow-hidden border-border bg-card shadow-xs lg:col-span-4">
                                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
-                                <CardContent className="relative flex flex-col items-center justify-center space-y-6 p-8 text-center">
+                                <CardContent className="relative flex flex-col items-center justify-center space-y-4 p-5 text-center">
                                     <SecurityScore score={securityScore} />
                                     <div>
                                         <h2 className="flex items-center justify-center gap-2 text-xl font-black tracking-tight text-foreground">
@@ -230,8 +231,8 @@ export default function FirewallOverview({
                             </Card>
 
                             {/* Stats Grid */}
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-8">
-                                <Card className="group relative overflow-hidden border-border bg-card shadow-2xl">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:col-span-8">
+                                <Card className="group relative overflow-hidden border-border bg-card shadow-xs">
                                     <CardContent className="p-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-2">
@@ -254,7 +255,7 @@ export default function FirewallOverview({
                                                 <Globe className="size-6" />
                                             </div>
                                         </div>
-                                        <div className="mt-6 h-[60px]">
+                                        <div className="mt-4 h-[140px]">
                                             <ResponsiveContainer
                                                 width="100%"
                                                 height="100%"
@@ -262,6 +263,17 @@ export default function FirewallOverview({
                                                 <AreaChart
                                                     data={timeSeries.slice(-10)}
                                                 >
+                                                    <XAxis
+                                                        {...timeAxis(
+                                                            'time',
+                                                            formatIsoTime,
+                                                        )}
+                                                    />
+                                                    <YAxis
+                                                        {...valueAxis(
+                                                            'Allowed',
+                                                        )}
+                                                    />
                                                     <Area
                                                         type="monotone"
                                                         dataKey="allowed"
@@ -276,7 +288,7 @@ export default function FirewallOverview({
                                     </CardContent>
                                 </Card>
 
-                                <Card className="group relative overflow-hidden border-border bg-card shadow-2xl">
+                                <Card className="group relative overflow-hidden border-border bg-card shadow-xs">
                                     <CardContent className="p-4">
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-2">
@@ -298,7 +310,7 @@ export default function FirewallOverview({
                                                 <Shield className="size-6" />
                                             </div>
                                         </div>
-                                        <div className="mt-6 h-[60px]">
+                                        <div className="mt-4 h-[140px]">
                                             <ResponsiveContainer
                                                 width="100%"
                                                 height="100%"
@@ -306,6 +318,15 @@ export default function FirewallOverview({
                                                 <AreaChart
                                                     data={timeSeries.slice(-10)}
                                                 >
+                                                    <XAxis
+                                                        {...timeAxis(
+                                                            'time',
+                                                            formatIsoTime,
+                                                        )}
+                                                    />
+                                                    <YAxis
+                                                        {...valueAxis('Denied')}
+                                                    />
                                                     <Area
                                                         type="monotone"
                                                         dataKey="denied"
@@ -323,8 +344,8 @@ export default function FirewallOverview({
                         </div>
 
                         {/* Middle Section: Chart & Alerts */}
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                            <Card className="overflow-hidden border-border bg-card shadow-2xl lg:col-span-8">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                            <Card className="overflow-hidden border-border bg-card shadow-xs lg:col-span-8">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <div className="space-y-1">
                                         <CardTitle className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
@@ -351,7 +372,7 @@ export default function FirewallOverview({
                                         </Badge>
                                     </div>
                                 </CardHeader>
-                                <CardContent className="h-[350px] p-6">
+                                <CardContent className="h-[350px] p-4">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
@@ -424,39 +445,15 @@ export default function FirewallOverview({
                                             <CartesianGrid
                                                 strokeDasharray="3 3"
                                                 vertical={false}
-                                                stroke="rgba(255,255,255,0.03)"
+                                                stroke="var(--border)"
                                             />
                                             <XAxis
-                                                dataKey="time"
-                                                axisLine={false}
-                                                tickLine={false}
-                                                tick={{
-                                                    fontSize: 9,
-                                                    fill: 'rgba(255,255,255,0.4)',
-                                                    fontWeight: 600,
-                                                }}
-                                                minTickGap={60}
-                                                tickFormatter={(str) => {
-                                                    const date = new Date(str);
-
-                                                    return date.toLocaleTimeString(
-                                                        [],
-                                                        {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                        },
-                                                    );
-                                                }}
+                                                {...timeAxis(
+                                                    'time',
+                                                    formatIsoTime,
+                                                )}
                                             />
-                                            <YAxis
-                                                axisLine={false}
-                                                tickLine={false}
-                                                tick={{
-                                                    fontSize: 9,
-                                                    fill: 'rgba(255,255,255,0.4)',
-                                                    fontWeight: 600,
-                                                }}
-                                            />
+                                            <YAxis {...valueAxis('Requests')} />
                                             <Tooltip
                                                 content={({
                                                     active,
@@ -469,8 +466,8 @@ export default function FirewallOverview({
                                                         payload.length
                                                     ) {
                                                         return (
-                                                            <div className="animate-in rounded-xl border border-white/10 bg-[#09090b] p-4 shadow-2xl backdrop-blur-xl duration-200 fade-in zoom-in">
-                                                                <p className="mb-3 border-b border-white/5 pb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                                                            <div className="animate-in rounded-xl border border-border bg-popover p-4 shadow-xs backdrop-blur-xl duration-200 fade-in zoom-in">
+                                                                <p className="mb-3 border-b border-border pb-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                                                                     {label
                                                                         ? new Date(
                                                                               label,
@@ -487,7 +484,7 @@ export default function FirewallOverview({
                                                                                 key={
                                                                                     index
                                                                                 }
-                                                                                className="flex items-center justify-between gap-8"
+                                                                                className="flex items-center justify-between gap-5"
                                                                             >
                                                                                 <div className="flex items-center gap-2">
                                                                                     <div
@@ -564,7 +561,7 @@ export default function FirewallOverview({
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-border bg-card shadow-2xl lg:col-span-4">
+                            <Card className="border-border bg-card shadow-xs lg:col-span-4">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                                         <AlertTriangle className="size-3.5 text-orange-500" />
@@ -629,7 +626,7 @@ export default function FirewallOverview({
                         </div>
 
                         {/* Bottom Grid: Protection Overview */}
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             {[
                                 {
                                     title: 'WAF Protection',
@@ -654,7 +651,7 @@ export default function FirewallOverview({
                                     key={i}
                                     className="border-border bg-card shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
                                 >
-                                    <CardContent className="flex items-start gap-4 p-6">
+                                    <CardContent className="flex items-start gap-4 p-4">
                                         <div
                                             className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.status ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-500' : 'border border-border bg-muted text-muted-foreground'}`}
                                         >

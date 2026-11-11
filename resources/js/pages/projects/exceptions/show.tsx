@@ -56,7 +56,7 @@ export default function ExceptionDetails({
         <>
             <Head title={payload.class || 'Exception'} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
@@ -75,14 +75,14 @@ export default function ExceptionDetails({
                 </div>
 
                 {/* Info Card & Small Chart */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <Card className="border-border bg-card p-6 shadow-2xl lg:col-span-2">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <Card className="border-border bg-card p-4 shadow-xs lg:col-span-2">
                         <div className="grid grid-cols-1 gap-x-12 gap-y-4 text-sm md:grid-cols-2">
                             <div className="flex items-center justify-between border-b border-border py-2">
                                 <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                     Type
                                 </span>
-                                <span className="font-mono text-xs font-bold text-red-400">
+                                <span className="font-mono text-xs font-bold text-red-600 dark:text-red-400">
                                     {payload.class}
                                 </span>
                             </div>
@@ -97,11 +97,11 @@ export default function ExceptionDetails({
                         </div>
                     </Card>
 
-                    <Card className="relative flex flex-col items-center justify-center overflow-hidden border-border bg-card p-6 shadow-2xl">
+                    <Card className="relative flex flex-col items-center justify-center overflow-hidden border-border bg-card p-4 shadow-xs">
                         <Badge className="mb-4 rounded-sm border-none bg-red-500 px-1.5 py-0 text-[10px] font-bold text-foreground uppercase">
                             UNHANDLED
                         </Badge>
-                        <div className="text-3xl font-bold text-foreground">
+                        <div className="text-2xl font-bold text-foreground">
                             {formatCompactNumber(records.total)}
                         </div>
                         <div className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -112,8 +112,8 @@ export default function ExceptionDetails({
 
                 {/* Code Preview Section */}
                 {firstFrame.file && (
-                    <Card className="overflow-hidden border-border bg-card font-mono shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-border bg-white/[0.03] px-4 py-2">
+                    <Card className="overflow-hidden border-border bg-card font-mono shadow-xs">
+                        <div className="flex items-center justify-between border-b border-border bg-foreground/[0.03] px-4 py-2">
                             <div className="flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                                 <span className="max-w-md truncate text-[10px] font-bold text-foreground">
@@ -168,7 +168,7 @@ export default function ExceptionDetails({
                                             <span className="text-muted-foreground/50">
                                                 #{stack.length - index}
                                             </span>
-                                            <span className="text-blue-400">
+                                            <span className="text-blue-600 dark:text-blue-400">
                                                 {frame.class}
                                                 {frame.type}
                                                 {frame.function}()
@@ -221,10 +221,10 @@ export default function ExceptionDetails({
                         <ChevronDown className="h-3 w-3" />
                         {formatCompactNumber(records.total)} Occurrences
                     </h3>
-                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                         <Table>
-                            <TableHeader className="bg-muted/30">
-                                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                            <TableHeader>
+                                <TableRow>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Environment</TableHead>
                                     <TableHead className="text-right">

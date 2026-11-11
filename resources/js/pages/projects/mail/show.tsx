@@ -48,12 +48,12 @@ export default function MailShow({
         <>
             <Head title={`Mail - ${mailableClass}`} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
                 {/* Header Section */}
-                <div className="relative flex items-center gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-2xl">
+                <div className="relative flex items-center gap-4 overflow-hidden rounded-lg border border-border bg-card p-4 shadow-xs">
                     <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-muted-foreground">
                         HASH: {hash}
                     </div>
@@ -80,10 +80,10 @@ export default function MailShow({
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                     <Table>
-                        <TableHeader className="bg-muted/30">
-                            <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                        <TableHeader>
+                            <TableRow>
                                 <TableHead>Sent At</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Recipients</TableHead>
@@ -103,7 +103,7 @@ export default function MailShow({
                                     </TableCell>
                                     <TableCell>
                                         <Badge
-                                            className={`text-[10px] font-bold uppercase ${record.payload.queued === 'true' || record.payload.queued === true ? 'bg-blue-500/10 text-blue-400' : 'bg-muted text-foreground/50'} border-none`}
+                                            className={`text-[10px] font-bold uppercase ${record.payload.queued === 'true' || record.payload.queued === true ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-foreground/50'} border-none`}
                                         >
                                             {record.payload.queued === 'true' ||
                                             record.payload.queued === true

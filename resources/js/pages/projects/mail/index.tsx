@@ -2,6 +2,7 @@
 import { ArrowUpRight, Inbox } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -18,11 +19,13 @@ import { show as showMail } from '@/routes/mail';
 
 export default function MailIndex({
     mailables,
+    search,
     period,
     from,
     to,
 }: {
     mailables: any;
+    search?: string | null;
     period?: string | null;
     from?: string | null;
     to?: string | null;
@@ -50,11 +53,15 @@ export default function MailIndex({
         <>
             <Head title="Mail" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
             {/* Table Section */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <SearchInput
+                        value={search}
+                        placeholder={'Search mailable...'}
+                    />
                     <div className="flex items-center gap-2 font-bold text-foreground">
                         <Inbox className="h-4 w-4 text-muted-foreground" />
                         <span>{mailables.total || 0} Mailables</span>
@@ -65,21 +72,19 @@ export default function MailIndex({
                     {data.length > 0 ? (
                         <>
                             <Table>
-                                <TableHeader className="bg-muted/30">
-                                    <TableRow className="border-border hover:bg-transparent">
-                                        <TableHead className="pl-6 text-[10px] font-bold text-muted-foreground uppercase">
-                                            Mailable
-                                        </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Mailable</TableHead>
+                                        <TableHead className="text-center">
                                             Queued
                                         </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                        <TableHead className="text-center">
                                             Direct
                                         </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                        <TableHead className="text-center">
                                             Total
                                         </TableHead>
-                                        <TableHead className="w-[50px] pr-6"></TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -88,7 +93,7 @@ export default function MailIndex({
                                             key={index}
                                             className="group border-border transition-colors hover:bg-muted/30"
                                         >
-                                            <TableCell className="pl-6">
+                                            <TableCell>
                                                 <Link
                                                     href={mailDetailsHref(
                                                         mail.hash,
@@ -109,7 +114,7 @@ export default function MailIndex({
                                             <TableCell className="text-center">
                                                 <Badge
                                                     variant="outline"
-                                                    className="border-none bg-blue-500/10 text-[10px] font-bold text-blue-400"
+                                                    className="border-none bg-blue-500/10 text-[10px] font-bold text-blue-600 dark:text-blue-400"
                                                 >
                                                     {mail.queued_count}
                                                 </Badge>
@@ -120,7 +125,7 @@ export default function MailIndex({
                                             <TableCell className="text-center font-mono text-xs font-bold text-foreground">
                                                 {mail.total}
                                             </TableCell>
-                                            <TableCell className="pr-6">
+                                            <TableCell>
                                                 <Link
                                                     href={mailDetailsHref(
                                                         mail.hash,

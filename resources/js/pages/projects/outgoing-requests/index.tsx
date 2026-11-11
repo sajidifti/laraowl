@@ -8,10 +8,17 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { RawHttpTable } from '@/components/raw-http-table';
+import {
+    METHOD_FILTER,
+    RecordFilters,
+    STATUS_FILTER,
+} from '@/components/record-filters';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -24,13 +31,16 @@ import {
 import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showOutgoingRequest } from '@/routes/outgoing-requests';
 
 export default function OutgoingRequestsIndex({
     records,
+    search,
     view = 'raw',
+    filters = {},
     timeSeries = [],
     overview,
     period,
@@ -38,7 +48,9 @@ export default function OutgoingRequestsIndex({
     to,
 }: {
     records: any;
+    search?: string | null;
     view?: string;
+    filters?: Record<string, string | null>;
     timeSeries: any;
     overview: any;
     period?: string | null;
@@ -68,12 +80,12 @@ export default function OutgoingRequestsIndex({
         <>
             <Head title="Outgoing Requests" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -103,10 +115,11 @@ export default function OutgoingRequestsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Requests')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -168,7 +181,7 @@ export default function OutgoingRequestsIndex({
                                         <Bar
                                             dataKey="ok"
                                             name="1/2/3xx"
-                                            fill="rgba(255,255,255,0.4)"
+                                            fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                             radius={[2, 2, 0, 0]}
                                             stackId="a"
                                         />
@@ -192,7 +205,7 @@ export default function OutgoingRequestsIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -203,10 +216,16 @@ export default function OutgoingRequestsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative h-[72px] w-full">
+                            <div className="relative h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis
+                                            {...valueAxis(
+                                                'Avg duration',
+                                                formatDuration,
+                                            )}
+                                        />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -261,15 +280,33 @@ export default function OutgoingRequestsIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <ViewPills
-                            current={view}
-                            views={[
-                                { value: 'raw', label: 'Raw' },
-                                { value: 'routes', label: 'By Route' },
-                                { value: 'hosts', label: 'By Host' },
-                            ]}
-                        />
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <ViewPills
+                                current={view}
+                                views={[
+                                    { value: 'raw', label: 'Raw' },
+                                    { value: 'routes', label: 'By Route' },
+                                    { value: 'hosts', label: 'By Host' },
+                                ]}
+                            />
+                            <SearchInput
+                                value={search}
+                                placeholder={
+                                    view === 'raw'
+                                        ? 'Search URL, host, status...'
+                                        : view === 'routes'
+                                          ? 'Search method or endpoint...'
+                                          : 'Search host...'
+                                }
+                            />
+                            {view === 'raw' && (
+                                <RecordFilters
+                                    filters={[STATUS_FILTER, METHOD_FILTER]}
+                                    values={filters}
+                                />
+                            )}
+                        </div>
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Globe className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -305,11 +342,9 @@ export default function OutgoingRequestsIndex({
                         ) : data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                Host
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Host</TableHead>
                                             <TableHead className="text-center">
                                                 1/2/3xx
                                             </TableHead>
@@ -325,7 +360,7 @@ export default function OutgoingRequestsIndex({
                                             <TableHead className="text-right">
                                                 Avg
                                             </TableHead>
-                                            <TableHead className="pr-6 text-right">
+                                            <TableHead className="text-right">
                                                 P95
                                             </TableHead>
                                         </TableRow>
@@ -336,7 +371,7 @@ export default function OutgoingRequestsIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6">
+                                                <TableCell>
                                                     <Link
                                                         href={outgoingRequestDetailsHref(
                                                             h.hash,
@@ -377,7 +412,7 @@ export default function OutgoingRequestsIndex({
                                                         h.avg_duration,
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                                                <TableCell className="text-right font-mono text-xs font-bold text-foreground">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <span>
                                                             {formatMicroSeconds(
@@ -423,16 +458,16 @@ export default function OutgoingRequestsIndex({
 function OutgoingRouteTable({ rows }: { rows: any[] }) {
     return (
         <Table>
-            <TableHeader className="bg-muted/30">
-                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                    <TableHead className="pl-6">Method</TableHead>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Method</TableHead>
                     <TableHead>Endpoint</TableHead>
                     <TableHead className="text-center">1/2/3xx</TableHead>
                     <TableHead className="text-center">4xx</TableHead>
                     <TableHead className="text-center">5xx</TableHead>
                     <TableHead className="text-center">Total</TableHead>
                     <TableHead className="text-right">Avg</TableHead>
-                    <TableHead className="pr-6 text-right">P95</TableHead>
+                    <TableHead className="text-right">P95</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -441,7 +476,7 @@ function OutgoingRouteTable({ rows }: { rows: any[] }) {
                         key={row.hash}
                         className="border-border transition-colors hover:bg-muted/30"
                     >
-                        <TableCell className="pl-6 text-[10px] font-bold text-muted-foreground uppercase">
+                        <TableCell className="text-[10px] font-bold text-muted-foreground uppercase">
                             {row.method}
                         </TableCell>
                         <TableCell className="max-w-[520px] font-mono text-xs break-all text-foreground/90">
@@ -462,7 +497,7 @@ function OutgoingRouteTable({ rows }: { rows: any[] }) {
                         <TableCell className="text-right font-mono text-xs text-foreground/90">
                             {formatMicroSeconds(row.avg_duration)}
                         </TableCell>
-                        <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                        <TableCell className="text-right font-mono text-xs font-bold text-foreground">
                             {formatMicroSeconds(row.p95_duration)}
                         </TableCell>
                     </TableRow>

@@ -48,7 +48,7 @@ const StatCard = ({
     color?: string;
     onBlock?: (ip: string) => void;
 }) => (
-    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+    <Card className="overflow-hidden border-border bg-card shadow-xs">
         <CardHeader className="border-b border-border/50 p-4">
             <CardTitle className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                 <Icon iconNode={icon} className="size-3.5" />
@@ -90,7 +90,7 @@ const StatCard = ({
                         </div>
                     ))
                 ) : (
-                    <div className="p-8 text-center text-xs font-medium text-muted-foreground">
+                    <div className="p-5 text-center text-xs font-medium text-muted-foreground">
                         No data available
                     </div>
                 )}
@@ -162,7 +162,7 @@ export default function FirewallTraffic({
         <div>
             <Head title="Traffic Analysis" />
 
-            <div className="animate-in space-y-8 duration-700 fade-in">
+            <div className="animate-in space-y-5 duration-700 fade-in">
                 {/* Secondary Nav */}
                 <div className="flex items-center gap-1 border-b border-border/50 pb-4">
                     {navItems.map((item) => (
@@ -184,7 +184,7 @@ export default function FirewallTraffic({
                 {!isConfigured ? (
                     <ConnectCloudflare />
                 ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <StatCard
                             title="Top IPs"
                             icon={Globe}

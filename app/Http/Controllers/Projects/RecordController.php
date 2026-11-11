@@ -8,6 +8,7 @@ use App\Models\Record;
 use App\Models\Team;
 use App\Services\RecordService;
 use App\Support\ExceptionTrace;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -15,6 +16,11 @@ use Inertia\Response;
 
 class RecordController extends Controller
 {
+    /**
+     * Record types that start a trace; every other record is an event inside one.
+     */
+    private const EXECUTION_TYPES = ['request', 'command', 'scheduled-task', 'job-attempt'];
+
     protected RecordService $recordService;
 
     public function __construct(RecordService $recordService)
@@ -46,7 +52,7 @@ class RecordController extends Controller
         $type = $this->resolveTypeFromRoute($routeName);
 
         return Inertia::render($this->resolveComponentPath($routeName), [
-            'records' => $this->recordService->getPaginatedRecords($project, $type, $request->search, $period, $from, $to),
+            'records' => $this->recordService->getPaginatedRecords($project, $type, $this->search(), $period, $from, $to),
             'filters' => $request->only(['search', 'period', 'from', 'to']),
             'stats' => $this->recordService->getQuickStats($project, $period, $from, $to),
             'period' => $period,
@@ -69,68 +75,89 @@ class RecordController extends Controller
         $direction = request()->query('direction', 'desc');
 
         $view = request()->query('view') === 'routes' ? 'routes' : 'raw';
-        $data = $this->recordService->getRequestStats($project, $period, $from, $to, $sort, $direction);
+        $data = $this->recordService->getRequestStats($project, $period, $from, $to, $sort, $direction, $view === 'routes' ? $this->search() : null);
 
         if ($view === 'raw') {
-            $data['requests'] = $this->recordService->getPaginatedRecords($project, 'request', request('search'), $period, $from, $to);
+            $data['requests'] = $this->recordService->getPaginatedRecords($project, 'request', $this->search(), $period, $from, $to, $this->rawFilters(['status', 'method']));
         }
 
-        return $this->renderWithStats('projects/requests', [...$data, 'view' => $view, 'search' => request('search')], $project, $period, $from, $to);
+        return $this->renderWithStats('projects/requests', [...$data, 'view' => $view, 'filters' => $this->rawFilters(['status', 'method'])], $project, $period, $from, $to);
     }
 
     protected function renderUsersIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/users', $this->recordService->getUserStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/users', $this->recordService->getUserStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderJobsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/jobs', $this->recordService->getJobStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/jobs', $this->recordService->getJobStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderExceptionsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/exceptions', $this->recordService->getExceptionStats($project, $period, $from, $to), $project, $period, $from, $to);
+        $view = request()->query('view') === 'grouped' ? 'grouped' : 'raw';
+        $data = $this->recordService->getExceptionStats($project, $period, $from, $to, search: $view === 'grouped' ? $this->search() : null);
+
+        if ($view === 'raw') {
+            $data['exceptions'] = $this->recordService->getPaginatedRecords($project, 'exception', $this->search(), $period, $from, $to, $this->rawFilters(['handled']));
+        }
+
+        return $this->renderWithStats('projects/exceptions', [...$data, 'view' => $view, 'filters' => $this->rawFilters(['handled'])], $project, $period, $from, $to);
     }
 
     protected function renderCommandsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/commands', $this->recordService->getCommandStats($project, $period, $from, $to), $project, $period, $from, $to);
+        $view = request()->query('view') === 'grouped' ? 'grouped' : 'raw';
+        $data = $this->recordService->getCommandStats($project, $period, $from, $to, search: $view === 'grouped' ? $this->search() : null);
+
+        if ($view === 'raw') {
+            $data['commands'] = $this->recordService->getPaginatedRecords($project, 'command', $this->search(), $period, $from, $to);
+        }
+
+        return $this->renderWithStats('projects/commands', [...$data, 'view' => $view], $project, $period, $from, $to);
     }
 
     protected function renderQueriesIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/queries', $this->recordService->getQueryStats($project, $period, $from, $to), $project, $period, $from, $to);
+        $view = request()->query('view') === 'grouped' ? 'grouped' : 'raw';
+        $data = $this->recordService->getQueryStats($project, $period, $from, $to, search: $view === 'grouped' ? $this->search() : null);
+
+        if ($view === 'raw') {
+            $data['queries'] = $this->recordService->getPaginatedRecords($project, 'query', $this->search(), $period, $from, $to, $this->rawFilters(['connection']));
+        }
+
+        return $this->renderWithStats('projects/queries', [...$data, 'view' => $view, 'filters' => $this->rawFilters(['connection'])], $project, $period, $from, $to);
     }
 
     protected function renderScheduledTasksIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/scheduled-tasks', $this->recordService->getScheduledTaskStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/scheduled-tasks', $this->recordService->getScheduledTaskStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderNotificationsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/notifications', $this->recordService->getNotificationStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/notifications', $this->recordService->getNotificationStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderMailIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/mail', $this->recordService->getMailStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/mail', $this->recordService->getMailStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderOutgoingRequestsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
         $view = in_array(request()->query('view'), ['routes', 'hosts'], true) ? request()->query('view') : 'raw';
-        $data = $this->recordService->getOutgoingRequestStats($project, $period, $from, $to);
+        $data = $this->recordService->getOutgoingRequestStats($project, $period, $from, $to, search: $view === 'hosts' ? $this->search() : null);
 
         $data['records'] = match ($view) {
-            'raw' => $this->recordService->getPaginatedRecords($project, 'outgoing-request', request('search'), $period, $from, $to),
-            'routes' => $this->recordService->getOutgoingRouteGroups($project, $period, $from, $to),
+            'raw' => $this->recordService->getPaginatedRecords($project, 'outgoing-request', $this->search(), $period, $from, $to, $this->rawFilters(['status', 'method'])),
+            'routes' => $this->recordService->getOutgoingRouteGroups($project, $period, $from, $to, search: $this->search()),
             'hosts' => $data['hosts'],
         };
         unset($data['hosts']);
 
-        return $this->renderWithStats('projects/outgoing-requests', [...$data, 'view' => $view, 'search' => request('search')], $project, $period, $from, $to);
+        return $this->renderWithStats('projects/outgoing-requests', [...$data, 'view' => $view, 'filters' => $this->rawFilters(['status', 'method'])], $project, $period, $from, $to);
     }
 
     protected function renderUptimeIndex(Project $project, string $period, ?string $from, ?string $to): Response
@@ -145,14 +172,14 @@ class RecordController extends Controller
 
     protected function renderCacheIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
-        return $this->renderWithStats('projects/cache', $this->recordService->getCacheStats($project, $period, $from, $to), $project, $period, $from, $to);
+        return $this->renderWithStats('projects/cache', $this->recordService->getCacheStats($project, $period, $from, $to, search: $this->search()), $project, $period, $from, $to);
     }
 
     protected function renderLogsIndex(Project $project, string $period, ?string $from, ?string $to): Response
     {
         return Inertia::render('projects/logs/index', [
-            'records' => $this->recordService->getLogRecords($project, request('search'), $period, $from, $to),
-            'filters' => request()->only(['search', 'period', 'from', 'to']),
+            'records' => $this->recordService->getLogRecords($project, $this->search(), $period, $from, $to, $this->rawFilters(['level'])),
+            'filters' => [...request()->only(['search', 'period', 'from', 'to']), ...$this->rawFilters(['level'])],
             'stats' => $this->recordService->getQuickStats($project, $period, $from, $to),
             'period' => $period,
             'from' => $from,
@@ -257,6 +284,8 @@ class RecordController extends Controller
 
     protected function renderWithStats(string $component, array $data, Project $project, string $period, ?string $from = null, ?string $to = null): Response
     {
+        $data['search'] ??= $this->search();
+
         return Inertia::render($component.'/index', array_merge($data, [
             'stats' => $this->recordService->getQuickStats($project, $period, $from, $to),
             'period' => $period,
@@ -270,6 +299,25 @@ class RecordController extends Controller
         $map = ['dashboard' => 'request', 'users' => 'user', 'security' => 'security'];
 
         return $map[$routeName] ?? Str::singular($routeName);
+    }
+
+    /**
+     * The raw-list filters a page accepts, read from the query string.
+     *
+     * @param  list<string>  $keys
+     * @return array<string, ?string>
+     */
+    protected function rawFilters(array $keys): array
+    {
+        return collect($keys)->mapWithKeys(fn (string $key) => [$key => request()->string($key)->trim()->value() ?: null])->all();
+    }
+
+    /**
+     * The trimmed search term, or null when empty.
+     */
+    protected function search(): ?string
+    {
+        return request()->string('search')->trim()->value() ?: null;
     }
 
     protected function resolveComponentPath(string $routeName): string
@@ -286,9 +334,11 @@ class RecordController extends Controller
 
         $record->load('issue');
         $relatedRecords = [];
+        $parentRecord = null;
         $traceId = $record->trace_id ?? ($record->payload['trace_id'] ?? null);
+        $isExecution = in_array($record->type, self::EXECUTION_TYPES, true);
 
-        if ($traceId) {
+        if ($traceId && $isExecution) {
             $relatedRecords = $project->records()
                 ->where('trace_id', $traceId)
                 ->where('id', '!=', $record->id)
@@ -297,9 +347,38 @@ class RecordController extends Controller
                 ->get(['id', 'type', 'payload', 'created_at']);
         }
 
+        if ($traceId && ! $isExecution) {
+            $parentRecord = $this->executionFor($project, $traceId);
+        }
+
         return Inertia::render('projects/records/show', [
             'record' => $record,
             'relatedRecords' => $relatedRecords,
+            'parentRecord' => $parentRecord,
         ]);
+    }
+
+    /**
+     * Jump from an event to the request, command or job that produced it.
+     */
+    public function showExecution(Team $current_team, Project $project, Record $record): RedirectResponse
+    {
+        abort_if($record->project_id !== $project->id, 404);
+
+        $traceId = $record->trace_id ?? ($record->payload['trace_id'] ?? null);
+        $target = in_array($record->type, self::EXECUTION_TYPES, true) || ! $traceId
+            ? $record
+            : ($this->executionFor($project, $traceId) ?? $record);
+
+        return to_route('records.show', [$current_team, $project, $target]);
+    }
+
+    protected function executionFor(Project $project, string $traceId): ?Record
+    {
+        return $project->records()
+            ->where('trace_id', $traceId)
+            ->whereIn('type', self::EXECUTION_TYPES)
+            ->oldest('created_at')
+            ->first(['id', 'type', 'payload', 'created_at']);
     }
 }

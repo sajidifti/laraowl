@@ -52,14 +52,14 @@ export default function SecurityDetails({
 
             <div className="animate-in space-y-12 duration-700 fade-in">
                 {/* Header */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 shadow-lg ring-1 ring-red-500/20">
                             <Shield className="h-6 w-6 text-red-500" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="text-3xl font-black tracking-tight text-foreground">
+                                <h1 className="text-2xl font-black tracking-tight text-foreground">
                                     {title}
                                 </h1>
                                 <Badge
@@ -84,9 +84,9 @@ export default function SecurityDetails({
                         </div>
                     </div>
 
-                    <Card className="border-border bg-card shadow-2xl">
-                        <CardContent className="p-8">
-                            <div className="rounded-lg border border-border/50 bg-black/20 p-4 font-mono text-sm leading-relaxed font-medium text-foreground/90">
+                    <Card className="border-border bg-card shadow-xs">
+                        <CardContent className="p-5">
+                            <div className="rounded-lg border border-border/50 bg-muted/50 p-4 font-mono text-sm leading-relaxed font-medium text-foreground/90">
                                 {message}
                             </div>
                         </CardContent>
@@ -105,17 +105,13 @@ export default function SecurityDetails({
                         </div>
                     </div>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow className="border-border hover:bg-transparent">
-                                    <TableHead className="px-6 py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Timestamp
-                                    </TableHead>
-                                    <TableHead className="py-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                        Source & Details
-                                    </TableHead>
-                                    <TableHead className="w-[50px] px-6"></TableHead>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Timestamp</TableHead>
+                                    <TableHead>Source & Details</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -124,7 +120,7 @@ export default function SecurityDetails({
                                         key={record.id}
                                         className="group border-border transition-colors hover:bg-muted/30"
                                     >
-                                        <TableCell className="px-6 py-5 align-top">
+                                        <TableCell className="px-4 py-3 align-top">
                                             <div className="text-[11px] font-black text-foreground">
                                                 {new Date(
                                                     record.created_at,
@@ -136,7 +132,7 @@ export default function SecurityDetails({
                                                 ).toLocaleTimeString()}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-5">
+                                        <TableCell className="py-3">
                                             <div className="flex flex-col gap-3">
                                                 <div className="flex items-center gap-2">
                                                     <Badge
@@ -214,7 +210,7 @@ export default function SecurityDetails({
                                                 {/* Integrity Changes */}
                                                 {record.payload
                                                     ._security_changes && (
-                                                    <div className="space-y-1.5 rounded-lg border border-border/50 bg-black/20 p-3">
+                                                    <div className="space-y-1.5 rounded-lg border border-border/50 bg-muted/50 p-3">
                                                         {record.payload._security_changes.map(
                                                             (
                                                                 c: any,
@@ -228,11 +224,11 @@ export default function SecurityDetails({
                                                                         className={`font-black uppercase ${
                                                                             c.type ===
                                                                             'modified'
-                                                                                ? 'text-orange-400'
+                                                                                ? 'text-orange-600 dark:text-orange-400'
                                                                                 : c.type ===
                                                                                     'added'
-                                                                                  ? 'text-green-400'
-                                                                                  : 'text-red-400'
+                                                                                  ? 'text-green-600 dark:text-green-400'
+                                                                                  : 'text-red-600 dark:text-red-400'
                                                                         }`}
                                                                     >
                                                                         [
@@ -259,7 +255,7 @@ export default function SecurityDetails({
                                                             ) => (
                                                                 <div
                                                                     key={i}
-                                                                    className="rounded-lg border border-border/50 bg-black/20 p-3"
+                                                                    className="rounded-lg border border-border/50 bg-muted/50 p-3"
                                                                 >
                                                                     <div className="mb-2 flex items-center gap-2">
                                                                         <Badge
@@ -302,11 +298,11 @@ export default function SecurityDetails({
                                                                                                 className={`font-black uppercase ${
                                                                                                     d.type ===
                                                                                                     'modified'
-                                                                                                        ? 'text-orange-400'
+                                                                                                        ? 'text-orange-600 dark:text-orange-400'
                                                                                                         : d.type ===
                                                                                                             'added'
-                                                                                                          ? 'text-green-400'
-                                                                                                          : 'text-red-400'
+                                                                                                          ? 'text-green-600 dark:text-green-400'
+                                                                                                          : 'text-red-600 dark:text-red-400'
                                                                                                 }`}
                                                                                             >
                                                                                                 [
@@ -342,7 +338,7 @@ export default function SecurityDetails({
                                                 )}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="px-6 py-5 align-top">
+                                        <TableCell className="px-4 py-3 align-top">
                                             <Link href={recordHref(record.id)}>
                                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted transition-all group-hover:border-primary/50 group-hover:bg-primary/5">
                                                     <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary" />

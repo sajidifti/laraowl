@@ -1,4 +1,5 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { FILTER_KEYS } from '@/components/record-filters';
 import { cn } from '@/lib/utils';
 
 export type ViewPill = {
@@ -13,26 +14,29 @@ export function ViewPills({
     views: ViewPill[];
     current: string;
 }) {
-    const hrefFor = (value: string) => {
-        const params = new URLSearchParams(window.location.search);
+    // The page URL, not window.location: the address bar updates after render.
+    const [pathname, query = ''] = usePage().url.split('?');
 
-        ['view', 'page', 'sort', 'direction', 'search'].forEach((key) =>
-            params.delete(key),
+    const hrefFor = (value: string) => {
+        const params = new URLSearchParams(query);
+
+        ['view', 'page', 'sort', 'direction', 'search', ...FILTER_KEYS].forEach(
+            (key) => params.delete(key),
         );
         params.set('view', value);
 
-        return `${window.location.pathname}?${params.toString()}`;
+        return `${pathname}?${params.toString()}`;
     };
 
     return (
-        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 p-1">
+        <div className="inline-flex items-center gap-0.5 rounded-md border border-border bg-muted/40 p-0.5">
             {views.map((view) => (
                 <Link
                     key={view.value}
                     href={hrefFor(view.value)}
                     preserveScroll
                     className={cn(
-                        'rounded-full px-4 py-1 text-xs font-bold transition-colors',
+                        'rounded-sm px-3 py-1 text-xs font-semibold transition-colors',
                         current === view.value
                             ? 'bg-foreground text-background'
                             : 'text-muted-foreground hover:text-foreground',

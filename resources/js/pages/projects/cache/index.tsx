@@ -1,8 +1,16 @@
 ﻿import { Head, usePage } from '@inertiajs/react';
 import { Database, Layers, FileCode } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -14,14 +22,17 @@ import {
 } from '@/components/ui/table';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { timeAxis, valueAxis } from '@/lib/chart-axes';
 import { formatCompactNumber } from '@/lib/utils';
 
 export default function CacheIndex({
     keys,
+    search,
     timeSeries = [],
     overview,
 }: {
     keys: any;
+    search?: string | null;
     timeSeries: any;
     overview: any;
 }) {
@@ -40,12 +51,12 @@ export default function CacheIndex({
         <>
             <Head title="Cache" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -82,10 +93,11 @@ export default function CacheIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Events')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -171,7 +183,7 @@ export default function CacheIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -180,10 +192,11 @@ export default function CacheIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Writes')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -234,7 +247,11 @@ export default function CacheIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <SearchInput
+                            value={search}
+                            placeholder={'Search cache key...'}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Layers className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -248,11 +265,9 @@ export default function CacheIndex({
                         {data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                Key
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Key</TableHead>
                                             <TableHead className="text-right">
                                                 Hit %
                                             </TableHead>
@@ -271,7 +286,7 @@ export default function CacheIndex({
                                             <TableHead className="text-right">
                                                 Failures
                                             </TableHead>
-                                            <TableHead className="pr-6 text-right">
+                                            <TableHead className="text-right">
                                                 Total
                                             </TableHead>
                                         </TableRow>
@@ -282,7 +297,7 @@ export default function CacheIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6">
+                                                <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <FileCode className="h-3 w-3 text-muted-foreground/50" />
                                                         <span className="max-w-md truncate font-mono text-xs text-foreground/90">
@@ -296,7 +311,7 @@ export default function CacheIndex({
                                                     ).toFixed(1)}
                                                     %
                                                 </TableCell>
-                                                <TableCell className="text-right font-mono text-xs font-bold text-blue-400">
+                                                <TableCell className="text-right font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
                                                     {formatCompactNumber(
                                                         key.hits || 0,
                                                     )}
@@ -319,7 +334,7 @@ export default function CacheIndex({
                                                 <TableCell className="text-right font-mono text-xs text-muted-foreground">
                                                     0
                                                 </TableCell>
-                                                <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                                                <TableCell className="text-right font-mono text-xs font-bold text-foreground">
                                                     {formatCompactNumber(
                                                         key.total,
                                                     )}

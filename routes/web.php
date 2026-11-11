@@ -11,6 +11,7 @@ use App\Http\Controllers\Teams\TeamController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureProjectExists;
 use App\Http\Middleware\EnsureTeamMembership;
+use App\Http\Middleware\RememberMonitoringPeriod;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,7 +41,7 @@ Route::get('/', function () {
 require __DIR__.'/settings.php';
 
 Route::prefix('{current_team}/{project}')
-    ->middleware(['auth', 'verified', EnsureTeamMembership::class, EnsureProjectExists::class])
+    ->middleware(['auth', 'verified', EnsureTeamMembership::class, EnsureProjectExists::class, RememberMonitoringPeriod::class])
     ->scopeBindings()
     ->group(function () {
         Route::get('dashboard', [RecordController::class, 'index'])->name('dashboard');
@@ -55,6 +56,7 @@ Route::prefix('{current_team}/{project}')
         Route::get('requests', [RecordController::class, 'index'])->name('requests');
         Route::get('requests/routes/{hash}', [RecordController::class, 'showDetails'])->name('requests.show');
         Route::get('records/{record}', [RecordController::class, 'showOccurrence'])->name('records.show');
+        Route::get('records/{record}/execution', [RecordController::class, 'showExecution'])->name('records.execution');
 
         Route::get('jobs', [RecordController::class, 'index'])->name('jobs');
         Route::get('jobs/types/{hash}', [RecordController::class, 'showJobDetails'])->name('jobs.show');

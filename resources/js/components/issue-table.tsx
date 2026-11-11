@@ -77,9 +77,9 @@ export function IssueTable({
     return (
         <div className="overflow-x-auto">
             <Table>
-                <TableHeader className="border-b border-border bg-muted/30">
-                    <TableRow className="border-none hover:bg-transparent">
-                        <TableHead className="hidden w-20 pl-6 md:table-cell">
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="hidden w-20 md:table-cell">
                             <div className="flex cursor-pointer items-center gap-1 transition-colors hover:text-foreground">
                                 ID <ArrowUpDown className="h-3 w-3" />
                             </div>
@@ -106,11 +106,11 @@ export function IssueTable({
                             </div>
                         </TableHead>
                         <TableHead className="text-right text-foreground">
-                            <div className="flex cursor-pointer items-center justify-end gap-1 font-bold whitespace-nowrap transition-colors hover:text-foreground">
+                            <div className="flex cursor-pointer items-center justify-end gap-1 whitespace-nowrap transition-colors hover:text-foreground">
                                 LAST SEEN <ChevronDown className="h-3 w-3" />
                             </div>
                         </TableHead>
-                        <TableHead className="hidden w-24 pr-6 text-right sm:table-cell">
+                        <TableHead className="hidden w-24 text-right sm:table-cell">
                             ASSIGNED
                         </TableHead>
                     </TableRow>
@@ -121,7 +121,7 @@ export function IssueTable({
                             key={issue.id}
                             className="group h-16 border-border transition-colors hover:bg-muted/30"
                         >
-                            <TableCell className="hidden pl-6 font-mono text-xs text-muted-foreground md:table-cell">
+                            <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
                                 #{issue.id}
                             </TableCell>
                             <TableCell>
@@ -183,7 +183,7 @@ export function IssueTable({
                                                     {issue.title}
                                                 </div>
                                             </TooltipTrigger>
-                                            <TooltipContent className="max-w-[400px] border-border bg-popover font-mono text-xs break-all text-popover-foreground shadow-2xl">
+                                            <TooltipContent className="max-w-[400px] border-border bg-popover font-mono text-xs break-all text-popover-foreground shadow-xs">
                                                 {issue.title}
                                             </TooltipContent>
                                         </Tooltip>
@@ -194,7 +194,7 @@ export function IssueTable({
                                                     {issue.message}
                                                 </div>
                                             </TooltipTrigger>
-                                            <TooltipContent className="max-w-[400px] border-border bg-popover font-mono text-xs break-all text-popover-foreground shadow-2xl">
+                                            <TooltipContent className="max-w-[400px] border-border bg-popover font-mono text-xs break-all text-popover-foreground shadow-xs">
                                                 {issue.message}
                                             </TooltipContent>
                                         </Tooltip>
@@ -223,7 +223,7 @@ export function IssueTable({
                                       ).replace('about ', '')
                                     : '--'}
                             </TableCell>
-                            <TableCell className="hidden pr-6 text-right sm:table-cell">
+                            <TableCell className="hidden text-right sm:table-cell">
                                 <div className="flex justify-end">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

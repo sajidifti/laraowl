@@ -1,8 +1,16 @@
 ﻿import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight, AlertCircle, Users } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -14,12 +22,14 @@ import {
 } from '@/components/ui/table';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatCompactNumber } from '@/lib/utils';
 import { show as showUser } from '@/routes/users';
 
 export default function UsersIndex({
     users,
+    search,
     timeSeries = [],
     period,
     from,
@@ -27,6 +37,7 @@ export default function UsersIndex({
     overview,
 }: {
     users: any;
+    search?: string | null;
     timeSeries: any;
     period: string;
     from?: string | null;
@@ -59,12 +70,12 @@ export default function UsersIndex({
         <>
             <Head title="Users" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -78,10 +89,11 @@ export default function UsersIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Users')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -130,7 +142,7 @@ export default function UsersIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -165,10 +177,11 @@ export default function UsersIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative h-[72px] w-full">
+                            <div className="relative h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Requests')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -230,7 +243,7 @@ export default function UsersIndex({
                                         <Bar
                                             dataKey="ok"
                                             name="1/2/3xx"
-                                            fill="rgba(255,255,255,0.4)"
+                                            fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                             radius={[2, 2, 0, 0]}
                                             stackId="a"
                                         />
@@ -257,7 +270,11 @@ export default function UsersIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <SearchInput
+                            value={search}
+                            placeholder={'Search users by id, name or email...'}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Users className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -270,11 +287,9 @@ export default function UsersIndex({
                         {data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                User
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>User</TableHead>
                                             <TableHead className="text-center">
                                                 1/2/3xx
                                             </TableHead>
@@ -296,7 +311,7 @@ export default function UsersIndex({
                                             <TableHead className="text-right">
                                                 Last Seen
                                             </TableHead>
-                                            <TableHead className="w-[50px] pr-6"></TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -305,7 +320,7 @@ export default function UsersIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6">
+                                                <TableCell>
                                                     <Link
                                                         href={userDetailsHref(
                                                             u.hash,
@@ -360,7 +375,7 @@ export default function UsersIndex({
                                                 <TableCell className="text-center font-mono text-xs text-muted-foreground">
                                                     0
                                                 </TableCell>
-                                                <TableCell className="text-center font-mono text-xs text-red-400">
+                                                <TableCell className="text-center font-mono text-xs text-red-600 dark:text-red-400">
                                                     {formatCompactNumber(
                                                         u.exception_count || 0,
                                                     )}
@@ -370,7 +385,7 @@ export default function UsersIndex({
                                                         u.last_seen,
                                                     ).toLocaleString()}
                                                 </TableCell>
-                                                <TableCell className="pr-6">
+                                                <TableCell>
                                                     <Link
                                                         href={userDetailsHref(
                                                             u.hash,

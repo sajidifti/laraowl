@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import {
     Table,
     TableBody,
@@ -27,11 +28,13 @@ import { show as showNotification } from '@/routes/notifications';
 
 export default function NotificationsIndex({
     notifications,
+    search,
     period,
     from,
     to,
 }: {
     notifications: any;
+    search?: string | null;
     period?: string | null;
     from?: string | null;
     to?: string | null;
@@ -72,11 +75,15 @@ export default function NotificationsIndex({
         <>
             <Head title="Notifications" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
             {/* Table Section */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <SearchInput
+                        value={search}
+                        placeholder={'Search notification or channel...'}
+                    />
                     <div className="flex items-center gap-2 font-bold text-foreground">
                         <Send className="h-4 w-4 text-muted-foreground" />
                         <span>
@@ -90,24 +97,20 @@ export default function NotificationsIndex({
                     {data.length > 0 ? (
                         <>
                             <Table>
-                                <TableHeader className="bg-muted/30">
-                                    <TableRow className="border-border hover:bg-transparent">
-                                        <TableHead className="pl-6 text-[10px] font-bold text-muted-foreground uppercase">
-                                            Notification
-                                        </TableHead>
-                                        <TableHead className="text-[10px] font-bold text-muted-foreground uppercase">
-                                            Channel
-                                        </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Notification</TableHead>
+                                        <TableHead>Channel</TableHead>
+                                        <TableHead className="text-center">
                                             Sent
                                         </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                        <TableHead className="text-center">
                                             Failed
                                         </TableHead>
-                                        <TableHead className="text-center text-[10px] font-bold text-muted-foreground uppercase">
+                                        <TableHead className="text-center">
                                             Total
                                         </TableHead>
-                                        <TableHead className="w-[50px] pr-6"></TableHead>
+                                        <TableHead className="w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -116,7 +119,7 @@ export default function NotificationsIndex({
                                             key={index}
                                             className="group border-border transition-colors hover:bg-muted/30"
                                         >
-                                            <TableCell className="pl-6">
+                                            <TableCell>
                                                 <Link
                                                     href={notificationDetailsHref(
                                                         notif.hash,
@@ -168,7 +171,7 @@ export default function NotificationsIndex({
                                                     notif.total,
                                                 )}
                                             </TableCell>
-                                            <TableCell className="pr-6">
+                                            <TableCell>
                                                 <Link
                                                     href={notificationDetailsHref(
                                                         notif.hash,

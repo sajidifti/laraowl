@@ -8,9 +8,13 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { RecordFilters } from '@/components/record-filters';
+import { RelatedRecordsTable } from '@/components/related-records-table';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -20,14 +24,20 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showQuery } from '@/routes/queries';
+import { show as showRecord } from '@/routes/records';
 
 export default function QueriesIndex({
     queries,
+    search,
+    view = 'raw',
+    filters = {},
     timeSeries = [],
     overview,
     period,
@@ -35,6 +45,9 @@ export default function QueriesIndex({
     to,
 }: {
     queries: any;
+    search?: string | null;
+    view?: string;
+    filters?: Record<string, string | null>;
     timeSeries: any;
     stats: any;
     overview: any;
@@ -65,11 +78,11 @@ export default function QueriesIndex({
         <>
             <Head title="Database Queries" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
             {/* Stats Cards */}
-            <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Card className="overflow-hidden border-border bg-card shadow-2xl">
+            <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <Card className="overflow-hidden border-border bg-card shadow-xs">
                     <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                             <div>
@@ -78,10 +91,11 @@ export default function QueriesIndex({
                                 </div>
                             </div>
                         </div>
-                        <div className="h-[72px] w-full">
+                        <div className="h-[150px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={timeSeries}>
-                                    <XAxis dataKey="minute" hide />
+                                    <XAxis {...timeAxis()} />
+                                    <YAxis {...valueAxis('Queries')} />
                                     <Tooltip
                                         content={({ active, payload }) => {
                                             if (
@@ -99,7 +113,7 @@ export default function QueriesIndex({
                                                             }
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <div className="h-2 w-2 rounded-full bg-white/40" />
+                                                            <div className="h-2 w-2 rounded-full bg-foreground/40" />
                                                             <span className="text-[10px] font-medium text-muted-foreground uppercase">
                                                                 Queries:
                                                             </span>
@@ -120,7 +134,7 @@ export default function QueriesIndex({
                                     <Bar
                                         dataKey="total"
                                         name="Total Queries"
-                                        fill="rgba(255,255,255,0.4)"
+                                        fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                         radius={[2, 2, 0, 0]}
                                     />
                                 </BarChart>
@@ -129,7 +143,7 @@ export default function QueriesIndex({
                     </CardContent>
                 </Card>
 
-                <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <Card className="overflow-hidden border-border bg-card shadow-xs">
                     <CardContent className="p-4">
                         <div className="mb-3 flex items-start justify-between">
                             <div>
@@ -138,9 +152,16 @@ export default function QueriesIndex({
                                 </div>
                             </div>
                         </div>
-                        <div className="h-[72px] w-full">
+                        <div className="h-[150px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={timeSeries}>
+                                    <XAxis {...timeAxis()} />
+                                    <YAxis
+                                        {...valueAxis(
+                                            'Avg duration',
+                                            formatDuration,
+                                        )}
+                                    />
                                     <Area
                                         type="monotone"
                                         dataKey="avg_duration"
@@ -158,7 +179,45 @@ export default function QueriesIndex({
 
             {/* Table Section */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ViewPills
+                            current={view}
+                            views={[
+                                { value: 'raw', label: 'Raw' },
+                                { value: 'grouped', label: 'By Query' },
+                            ]}
+                        />
+                        <SearchInput
+                            value={search}
+                            placeholder={
+                                view === 'raw'
+                                    ? 'Search SQL, file...'
+                                    : 'Search SQL...'
+                            }
+                        />
+                        {view === 'raw' && (
+                            <RecordFilters
+                                filters={[
+                                    {
+                                        key: 'connection',
+                                        label: 'Connection',
+                                        options: [
+                                            'mysql',
+                                            'mariadb',
+                                            'pgsql',
+                                            'sqlite',
+                                            'sqlsrv',
+                                        ].map((connection) => ({
+                                            value: connection,
+                                            label: connection,
+                                        })),
+                                    },
+                                ]}
+                                values={filters}
+                            />
+                        )}
+                    </div>
                     <div className="flex items-center gap-2 font-bold text-foreground">
                         <Database className="h-4 w-4 text-muted-foreground" />
                         <span>
@@ -168,14 +227,29 @@ export default function QueriesIndex({
                 </div>
 
                 <div className="overflow-hidden rounded-lg border border-border bg-card">
-                    {data.length > 0 ? (
+                    {data.length > 0 && view === 'raw' ? (
+                        <>
+                            <RelatedRecordsTable
+                                type="query"
+                                records={data}
+                                hrefFor={(record) =>
+                                    showRecord.url({
+                                        current_team: teamSlug,
+                                        project: projectSlug,
+                                        record,
+                                    })
+                                }
+                                showDate
+                                showSource
+                            />
+                            <Pagination links={queries.links} meta={queries} />
+                        </>
+                    ) : data.length > 0 ? (
                         <>
                             <Table>
-                                <TableHeader className="bg-muted/30">
-                                    <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                        <TableHead className="pl-6">
-                                            Query
-                                        </TableHead>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Query</TableHead>
                                         <TableHead className="text-center">
                                             Connection
                                         </TableHead>
@@ -188,7 +262,7 @@ export default function QueriesIndex({
                                         <TableHead className="text-right">
                                             Avg
                                         </TableHead>
-                                        <TableHead className="pr-6 text-right">
+                                        <TableHead className="text-right">
                                             P95
                                         </TableHead>
                                     </TableRow>
@@ -199,10 +273,10 @@ export default function QueriesIndex({
                                             key={index}
                                             className="group border-border transition-colors hover:bg-muted/30"
                                         >
-                                            <TableCell className="max-w-[500px] pl-6">
+                                            <TableCell className="max-w-[500px]">
                                                 <div className="flex items-start gap-2">
                                                     <FileCode className="mt-1 h-3 w-3 shrink-0 text-muted-foreground/50" />
-                                                    <span className="line-clamp-2 cursor-default font-mono text-xs text-blue-400 transition-all hover:line-clamp-none">
+                                                    <span className="line-clamp-2 cursor-default font-mono text-xs text-blue-600 transition-all hover:line-clamp-none dark:text-blue-400">
                                                         {q.sql_query}
                                                     </span>
                                                 </div>
@@ -225,7 +299,7 @@ export default function QueriesIndex({
                                                     q.avg_duration,
                                                 )}
                                             </TableCell>
-                                            <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground">
+                                            <TableCell className="text-right font-mono text-xs font-bold text-foreground">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <span>
                                                         {formatMicroSeconds(

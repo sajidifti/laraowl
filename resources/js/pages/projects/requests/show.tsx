@@ -55,9 +55,9 @@ export default function RequestDetails({
     const getMethodColor = (m: string) => {
         switch (m?.toUpperCase()) {
             case 'POST':
-                return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
             case 'GET':
-                return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30';
             default:
                 return 'bg-muted text-foreground border-border';
         }
@@ -67,7 +67,7 @@ export default function RequestDetails({
         <>
             <Head title={`Details: ${method} ${path}`} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
@@ -105,17 +105,15 @@ export default function RequestDetails({
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                         <Table>
-                            <TableHeader className="bg-muted/30">
-                                <TableRow className="border-border hover:bg-transparent">
-                                    <TableHead className="text-[10px] font-bold text-muted-foreground uppercase">
-                                        Date
-                                    </TableHead>
-                                    <TableHead className="text-right text-[10px] font-bold text-muted-foreground uppercase">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-right">
                                         Status
                                     </TableHead>
-                                    <TableHead className="text-right text-[10px] font-bold text-muted-foreground uppercase">
+                                    <TableHead className="text-right">
                                         Duration
                                     </TableHead>
                                     <TableHead className="w-[50px]"></TableHead>

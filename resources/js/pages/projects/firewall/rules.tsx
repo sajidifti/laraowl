@@ -31,7 +31,7 @@ const RuleRow = ({
     badge?: string;
     onToggle?: (checked: boolean) => void;
 }) => (
-    <div className="group flex items-center justify-between rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md">
+    <div className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md">
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
                 <span className="text-sm font-black text-foreground">
@@ -48,7 +48,7 @@ const RuleRow = ({
             </div>
             <p className="text-xs text-muted-foreground">{description}</p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">
                     {status}
@@ -162,7 +162,7 @@ export default function FirewallRules({
         <div>
             <Head title="Firewall Rules" />
 
-            <div className="animate-in space-y-8 duration-700 fade-in">
+            <div className="animate-in space-y-5 duration-700 fade-in">
                 {/* Secondary Nav */}
                 <div className="flex items-center gap-1 border-b border-border/50 pb-4">
                     {navItems.map((item) => (
@@ -184,12 +184,12 @@ export default function FirewallRules({
                 {!isConfigured ? (
                     <ConnectCloudflare />
                 ) : (
-                    <div className="relative space-y-8">
+                    <div className="relative space-y-5">
                         {/* Add Rule Overlay */}
                         {(isAddingIp || isAddingBypass) && (
                             <div className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-background/80 backdrop-blur-sm duration-200 fade-in">
-                                <Card className="w-full max-w-md border-border bg-card shadow-2xl">
-                                    <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 p-6">
+                                <Card className="w-full max-w-md border-border bg-card shadow-xs">
+                                    <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 p-4">
                                         <CardTitle className="text-sm font-black tracking-widest uppercase">
                                             {isAddingBypass
                                                 ? 'Add Bypass Rule'
@@ -279,7 +279,7 @@ export default function FirewallRules({
                         )}
 
                         {/* DDoS Mitigations */}
-                        <section className="space-y-6">
+                        <section className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col gap-1">
                                     <h3 className="text-lg font-black tracking-tight text-foreground">
@@ -361,7 +361,7 @@ export default function FirewallRules({
                         </section>
 
                         {/* IP Blocking */}
-                        <section className="space-y-6">
+                        <section className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col gap-1">
                                     <h3 className="text-lg font-black tracking-tight text-foreground">
@@ -428,7 +428,7 @@ export default function FirewallRules({
                         </section>
 
                         {/* Security Features */}
-                        <section className="space-y-6">
+                        <section className="space-y-4">
                             <div className="flex flex-col gap-1">
                                 <h3 className="text-lg font-black tracking-tight text-foreground">
                                     Security Features
@@ -469,7 +469,7 @@ export default function FirewallRules({
                         </section>
 
                         {/* Danger Zone */}
-                        <section className="space-y-6 pt-12">
+                        <section className="space-y-4 pt-12">
                             <div className="flex flex-col gap-1">
                                 <h3 className="text-lg font-black tracking-tight text-red-500">
                                     Danger Zone
@@ -478,12 +478,12 @@ export default function FirewallRules({
 
                             <Card className="overflow-hidden border-red-500/20 bg-red-500/5 shadow-lg">
                                 <CardContent className="divide-y divide-red-500/10 p-0">
-                                    <div className="flex items-center justify-between p-6">
+                                    <div className="flex items-center justify-between p-4">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-sm font-black tracking-widest text-red-500 uppercase">
                                                 Attack Mode
                                             </span>
-                                            <p className="text-xs text-red-400/80">
+                                            <p className="text-xs text-red-600/80 dark:text-red-400/80">
                                                 Challenge suspicious traffic
                                                 with JavaScript verification to
                                                 block automated attacks.

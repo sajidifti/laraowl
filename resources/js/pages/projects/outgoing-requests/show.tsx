@@ -43,12 +43,12 @@ export default function OutgoingRequestShow({
         <>
             <Head title={`Outgoing Requests - ${host}`} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
                 {/* Header Section */}
-                <div className="relative flex items-center gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-2xl">
+                <div className="relative flex items-center gap-4 overflow-hidden rounded-lg border border-border bg-card p-4 shadow-xs">
                     <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-muted-foreground">
                         HASH: {hash}
                     </div>
@@ -88,10 +88,10 @@ export default function OutgoingRequestShow({
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                         <Table>
-                            <TableHeader className="bg-muted/30">
-                                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                            <TableHeader>
+                                <TableRow>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Method</TableHead>
                                     <TableHead>Status</TableHead>
@@ -116,7 +116,7 @@ export default function OutgoingRequestShow({
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
-                                                className={`text-[10px] font-bold uppercase ${record.payload.method === 'POST' ? 'border-blue-400/20 text-blue-400' : 'border-emerald-400/20 text-emerald-400'}`}
+                                                className={`text-[10px] font-bold uppercase ${record.payload.method === 'POST' ? 'border-blue-400/20 text-blue-600 dark:text-blue-400' : 'border-emerald-400/20 text-emerald-600 dark:text-emerald-400'}`}
                                             >
                                                 {record.payload.method}
                                             </Badge>

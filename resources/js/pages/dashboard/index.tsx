@@ -17,12 +17,14 @@ import {
     Bar,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { appendMonitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 
@@ -70,9 +72,9 @@ export default function Dashboard({
 
             <div className="animate-in space-y-12 duration-700 fade-in">
                 {/* Section: Health & Setup */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                     {/* Uptime Status */}
-                    <Card className="relative overflow-hidden border-border bg-card shadow-2xl lg:col-span-4">
+                    <Card className="relative overflow-hidden border-border bg-card shadow-xs lg:col-span-4">
                         <div
                             className={`absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full opacity-20 blur-3xl ${
                                 !uptimeEnabled
@@ -83,7 +85,7 @@ export default function Dashboard({
                             }`}
                         />
                         <CardContent className="p-5">
-                            <div className="mb-6 flex items-center justify-between">
+                            <div className="mb-4 flex items-center justify-between">
                                 <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                     Availability
                                 </div>
@@ -136,9 +138,9 @@ export default function Dashboard({
 
                     {/* Dynamic Guide or Insights */}
                     {total_requests === 0 ? (
-                        <Card className="overflow-hidden border-border bg-card/40 shadow-2xl lg:col-span-8">
+                        <Card className="overflow-hidden border-border bg-card/40 shadow-xs lg:col-span-8">
                             <CardContent className="flex flex-col items-stretch p-0 md:flex-row">
-                                <div className="flex-1 space-y-4 p-8">
+                                <div className="flex-1 space-y-4 p-5">
                                     <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                         Quick Integration
                                     </div>
@@ -169,7 +171,7 @@ export default function Dashboard({
                                         </Button>
                                     </div>
                                 </div>
-                                <div className="flex flex-col justify-center gap-4 border-l border-border/50 bg-muted/30 p-8 md:w-64">
+                                <div className="flex flex-col justify-center gap-4 border-l border-border/50 bg-muted/30 p-5 md:w-64">
                                     <div className="space-y-1">
                                         <div className="text-[9px] font-black text-muted-foreground uppercase">
                                             Your API Token
@@ -196,8 +198,8 @@ export default function Dashboard({
                             </CardContent>
                         </Card>
                     ) : (
-                        <Card className="overflow-hidden border-border bg-card/40 shadow-2xl lg:col-span-8">
-                            <CardContent className="grid grid-cols-1 gap-8 p-8 md:grid-cols-2">
+                        <Card className="overflow-hidden border-border bg-card/40 shadow-xs lg:col-span-8">
+                            <CardContent className="grid grid-cols-1 gap-5 p-5 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                         Integration Status
@@ -279,22 +281,22 @@ export default function Dashboard({
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {/* Requests Card */}
-                        <Card className="group overflow-hidden border-border bg-card shadow-2xl">
+                        <Card className="group overflow-hidden border-border bg-card shadow-xs">
                             <CardContent className="p-5">
-                                <div className="mb-8 flex items-start justify-between">
+                                <div className="mb-5 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Requests
                                         </div>
-                                        <div className="text-3xl font-black tracking-tighter text-foreground">
+                                        <div className="text-2xl font-black tracking-tighter text-foreground">
                                             {formatCompactNumber(
                                                 total_requests,
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex gap-6">
+                                    <div className="flex gap-4">
                                         <div className="text-right">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <span className="h-2 w-2 rounded-full bg-muted-foreground/30"></span>{' '}
@@ -338,13 +340,14 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[72px] w-full">
+                                <div className="h-[150px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
                                     >
                                         <BarChart data={timeSeries}>
-                                            <XAxis dataKey="minute" hide />
+                                            <XAxis {...timeAxis()} />
+                                            <YAxis {...valueAxis('Requests')} />
                                             <Tooltip
                                                 content={({
                                                     active,
@@ -409,7 +412,7 @@ export default function Dashboard({
                                             <Bar
                                                 dataKey="ok"
                                                 name="1/2/3xx"
-                                                fill="rgba(255,255,255,0.4)"
+                                                fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                                 radius={[2, 2, 0, 0]}
                                                 stackId="a"
                                             />
@@ -434,14 +437,14 @@ export default function Dashboard({
                         </Card>
 
                         {/* Duration Card */}
-                        <Card className="group overflow-hidden border-border bg-card shadow-2xl">
+                        <Card className="group overflow-hidden border-border bg-card shadow-xs">
                             <CardContent className="p-5">
-                                <div className="mb-8 flex items-start justify-between">
+                                <div className="mb-5 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                             Duration
                                         </div>
-                                        <div className="text-3xl font-black tracking-tighter text-foreground">
+                                        <div className="text-2xl font-black tracking-tighter text-foreground">
                                             {formatMicroSeconds(
                                                 duration_stats?.min,
                                             )}{' '}
@@ -451,7 +454,7 @@ export default function Dashboard({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex gap-6">
+                                    <div className="flex gap-4">
                                         <div className="text-right">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <span className="h-2 w-2 rounded-full bg-muted-foreground/30"></span>{' '}
@@ -480,7 +483,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[72px] w-full">
+                                <div className="h-[150px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
@@ -506,7 +509,13 @@ export default function Dashboard({
                                                     />
                                                 </linearGradient>
                                             </defs>
-                                            <XAxis dataKey="minute" hide />
+                                            <XAxis {...timeAxis()} />
+                                            <YAxis
+                                                {...valueAxis(
+                                                    'Avg duration',
+                                                    formatDuration,
+                                                )}
+                                            />
                                             <Tooltip
                                                 content={({
                                                     active,
@@ -583,10 +592,10 @@ export default function Dashboard({
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                         {/* Exceptions Overview */}
-                        <Card className="relative flex flex-col overflow-hidden border-border bg-card p-6 shadow-2xl lg:col-span-4">
-                            <Badge className="mb-6 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
+                        <Card className="relative flex flex-col overflow-hidden border-border bg-card p-4 shadow-xs lg:col-span-4">
+                            <Badge className="mb-4 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
                                 EXCEPTIONS
                             </Badge>
                             <h3 className="mb-2 text-xl leading-tight font-black tracking-tight text-foreground">
@@ -599,7 +608,7 @@ export default function Dashboard({
                             </p>
 
                             <div className="mt-auto pt-8">
-                                <div className="mb-8 flex h-[100px] w-full items-end gap-1">
+                                <div className="mb-5 flex h-[100px] w-full items-end gap-1">
                                     {exceptionSeries.map(
                                         (d: any, i: number) => (
                                             <div
@@ -620,7 +629,7 @@ export default function Dashboard({
                                         ),
                                     )}
                                 </div>
-                                <div className="mb-6 flex items-center gap-4 text-[9px] font-black tracking-widest text-muted-foreground/60 uppercase">
+                                <div className="mb-4 flex items-center gap-4 text-[9px] font-black tracking-widest text-muted-foreground/60 uppercase">
                                     <div className="flex items-center gap-1.5">
                                         <span className="size-1.5 rounded-full bg-muted-foreground/20"></span>{' '}
                                         {total_exceptions > 0
@@ -645,26 +654,26 @@ export default function Dashboard({
                         </Card>
 
                         {/* Setup Thresholds */}
-                        <Card className="group flex cursor-pointer flex-col items-center justify-center border-dashed border-border bg-card p-6 text-center shadow-2xl transition-all hover:border-primary/50 lg:col-span-4">
-                            <div className="mb-6 flex size-12 items-center justify-center rounded-xl border border-border bg-muted transition-transform group-hover:scale-110">
+                        <Card className="group flex cursor-pointer flex-col items-center justify-center border-dashed border-border bg-card p-4 text-center shadow-xs transition-all hover:border-primary/50 lg:col-span-4">
+                            <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-border bg-muted transition-transform group-hover:scale-110">
                                 <Settings2 className="size-6 text-muted-foreground" />
                             </div>
                             <h3 className="mb-2 text-xl font-black tracking-tight text-foreground">
                                 Setup thresholds
                             </h3>
-                            <p className="mb-8 max-w-[200px] text-xs leading-relaxed text-muted-foreground">
+                            <p className="mb-5 max-w-[200px] text-xs leading-relaxed text-muted-foreground">
                                 Configure your performance thresholds to start
                                 monitoring.
                             </p>
-                            <Button className="h-9 gap-2 rounded-lg bg-primary px-6 text-[10px] font-black tracking-widest text-primary-foreground uppercase">
+                            <Button className="h-9 gap-2 rounded-lg bg-primary px-4 text-[10px] font-black tracking-widest text-primary-foreground uppercase">
                                 <Plus className="size-3.5" /> Add Threshold
                             </Button>
                         </Card>
 
                         {/* Jobs & Durations */}
-                        <Card className="flex flex-col divide-y divide-border border-border bg-card shadow-2xl lg:col-span-4">
-                            <div className="flex-1 p-6">
-                                <div className="mb-6 flex items-center justify-between">
+                        <Card className="flex flex-col divide-y divide-border border-border bg-card shadow-xs lg:col-span-4">
+                            <div className="flex-1 p-4">
+                                <div className="mb-4 flex items-center justify-between">
                                     <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                         Jobs
                                     </div>
@@ -689,8 +698,8 @@ export default function Dashboard({
                                     {job_stats?.total || 0}
                                 </div>
                             </div>
-                            <div className="flex-1 p-6">
-                                <div className="mb-6 flex items-center justify-between">
+                            <div className="flex-1 p-4">
+                                <div className="mb-4 flex items-center justify-between">
                                     <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
                                         Job Duration
                                     </div>
@@ -738,18 +747,18 @@ export default function Dashboard({
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                         {/* Impacted by Exceptions */}
-                        <Card className="flex flex-col border-border bg-card p-6 shadow-2xl lg:col-span-4">
-                            <Badge className="mb-6 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
+                        <Card className="flex flex-col border-border bg-card p-4 shadow-xs lg:col-span-4">
+                            <Badge className="mb-4 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
                                 EXCEPTIONS
                             </Badge>
-                            <h3 className="mb-8 text-xl leading-tight font-black tracking-tight text-foreground">
+                            <h3 className="mb-5 text-xl leading-tight font-black tracking-tight text-foreground">
                                 {impacted_users?.length || 0} user impacted by
                                 exceptions in the last {period}.
                             </h3>
 
-                            <div className="mb-8 space-y-2">
+                            <div className="mb-5 space-y-2">
                                 {impacted_users
                                     ?.slice(0, 1)
                                     .map((u: any, i: number) => (
@@ -793,15 +802,15 @@ export default function Dashboard({
                         </Card>
 
                         {/* Most Active Users */}
-                        <Card className="flex flex-col border-border bg-card p-6 shadow-2xl lg:col-span-4">
-                            <Badge className="mb-6 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
+                        <Card className="flex flex-col border-border bg-card p-4 shadow-xs lg:col-span-4">
+                            <Badge className="mb-4 w-fit border-border bg-muted text-[9px] font-black tracking-widest text-muted-foreground">
                                 REQUESTS
                             </Badge>
-                            <h3 className="mb-8 text-xl leading-tight font-black tracking-tight text-foreground">
+                            <h3 className="mb-5 text-xl leading-tight font-black tracking-tight text-foreground">
                                 Most active users in the last {period}.
                             </h3>
 
-                            <div className="mb-8 space-y-2">
+                            <div className="mb-5 space-y-2">
                                 {active_users
                                     ?.slice(0, 3)
                                     .map((u: any, i: number) => (
@@ -836,8 +845,8 @@ export default function Dashboard({
                         </Card>
 
                         {/* Auth vs Guest Charts */}
-                        <div className="space-y-6 lg:col-span-4">
-                            <Card className="border-border bg-card p-6 shadow-2xl">
+                        <div className="space-y-4 lg:col-span-4">
+                            <Card className="border-border bg-card p-4 shadow-xs">
                                 <div className="mb-3 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
@@ -850,13 +859,14 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[80px] w-full">
+                                <div className="h-[150px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
                                     >
                                         <BarChart data={timeSeries?.slice(-15)}>
-                                            <XAxis dataKey="minute" hide />
+                                            <XAxis {...timeAxis()} />
+                                            <YAxis {...valueAxis('Users')} />
                                             <Tooltip
                                                 content={({
                                                     active,
@@ -905,7 +915,7 @@ export default function Dashboard({
                                 </div>
                             </Card>
 
-                            <Card className="border-border bg-card p-6 shadow-2xl">
+                            <Card className="border-border bg-card p-4 shadow-xs">
                                 <div className="mb-3 flex items-start justify-between">
                                     <div>
                                         <div className="mb-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase opacity-50">
@@ -934,13 +944,14 @@ export default function Dashboard({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-[80px] w-full">
+                                <div className="h-[150px] w-full">
                                     <ResponsiveContainer
                                         width="100%"
                                         height="100%"
                                     >
                                         <BarChart data={timeSeries?.slice(-15)}>
-                                            <XAxis dataKey="minute" hide />
+                                            <XAxis {...timeAxis()} />
+                                            <YAxis {...valueAxis('Requests')} />
                                             <Tooltip
                                                 content={({
                                                     active,

@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { timeAxis, valueAxis } from '@/lib/chart-axes';
 import { formatCompactNumber } from '@/lib/utils';
 
 export default function Issues({
@@ -81,7 +82,7 @@ export default function Issues({
         <>
             <Head title="Issues" />
 
-            <div className="mb-6 space-y-4">
+            <div className="mb-4 space-y-4">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div className="scrollbar-hide flex w-fit items-center gap-2 overflow-x-auto rounded-lg border border-border bg-muted p-1">
                         <button
@@ -141,9 +142,9 @@ export default function Issues({
                 )}
             </div>
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
                 {view === 'exceptions' ? (
-                    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+                    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
                         {data.length > 0 ? (
                             <IssueTable
                                 issues={issues}
@@ -160,7 +161,7 @@ export default function Issues({
                         )}
                     </div>
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="border-border bg-card">
                                 <CardContent className="p-4">
@@ -226,8 +227,8 @@ export default function Issues({
                             </Card>
                         </div>
 
-                        <Card className="overflow-hidden border-border bg-card shadow-2xl">
-                            <CardHeader className="p-6 pb-0">
+                        <Card className="overflow-hidden border-border bg-card shadow-xs">
+                            <CardHeader className="p-4 pb-0">
                                 <CardTitle className="flex items-center gap-2 text-sm font-bold tracking-widest text-foreground uppercase">
                                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                     Issue Trends (30 Days)
@@ -262,8 +263,10 @@ export default function Issues({
                                                     />
                                                 </linearGradient>
                                             </defs>
-                                            <XAxis dataKey="date" hide />
-                                            <YAxis hide />
+                                            <XAxis {...timeAxis('date')} />
+                                            <YAxis
+                                                {...valueAxis('Occurrences')}
+                                            />
                                             <Tooltip
                                                 contentStyle={{
                                                     backgroundColor:

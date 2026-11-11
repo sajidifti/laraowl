@@ -17,12 +17,12 @@ export default function CreateProject() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <Head title="New Project" />
 
             <div className="w-full max-w-sm space-y-10">
                 <div className="space-y-2 text-center">
-                    <h1 className="text-3xl font-black tracking-tight">
+                    <h1 className="text-2xl font-black tracking-tight">
                         Create Project
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground">
@@ -30,8 +30,8 @@ export default function CreateProject() {
                     </p>
                 </div>
 
-                <form onSubmit={submit} className="space-y-8">
-                    <div className="space-y-6">
+                <form onSubmit={submit} className="space-y-5">
+                    <div className="space-y-4">
                         {/* Icon Upload Area */}
                         <div className="flex flex-col items-center gap-4">
                             <div

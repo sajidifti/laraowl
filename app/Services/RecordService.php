@@ -51,7 +51,7 @@ class RecordService
     /**
      * Aggregate Request Data
      */
-    public function getRequestStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, string $sort = 'total', string $direction = 'desc'): array
+    public function getRequestStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, string $sort = 'total', string $direction = 'desc', ?string $search = null): array
     {
         $allowedSorts = ['method', 'path', 'total', 'ok_count', 'client_error_count', 'server_error_count', 'avg_duration', 'p95_duration'];
         $sort = in_array($sort, $allowedSorts) ? $sort : 'total';
@@ -64,6 +64,7 @@ class RecordService
             sort: $sort,
             direction: $direction,
             sortMap: ['method' => 'label', 'path' => 'sublabel', 'p95_duration' => 'max_duration'],
+            search: $search,
         )->through(function ($row) {
             $row->method = $row->label;
             $row->path = $row->sublabel;
@@ -142,7 +143,7 @@ class RecordService
     /**
      * Aggregate User Data
      */
-    public function getUserStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getUserStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $user = $this->jsonValue('user');
         $statusCode = $this->jsonNumeric('status_code');
@@ -173,14 +174,16 @@ class RecordService
             ->groupBy('user_key')
             ->orderBy('last_seen', 'desc');
 
+        if ($search = trim((string) $search)) {
+            $this->applyUserSearch($project, $users, $search);
+        }
+
         // Counted as distinct users rather than by asking the database how
         // many rows the grouping produces: `paginate()` answers that by
         // running the whole aggregate a second time inside a subquery.
-        $users = $this->paginateWithKnownTotal(
-            $users,
-            $this->distinctUsers($project, null, $period, $from, $to),
-            perPage: 20,
-        );
+        $users = $search
+            ? $users->paginate(20)->withQueryString()
+            : $this->paginateWithKnownTotal($users, $this->distinctUsers($project, null, $period, $from, $to), perPage: 20);
 
         return [
             'users' => $this->enrichUserPaginator($project, $users),
@@ -196,13 +199,13 @@ class RecordService
     /**
      * Aggregate Job Data
      */
-    public function getJobStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getJobStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $types = ['job-attempt', 'queued-job'];
 
         $overview = $this->rollupTotals($project, $types, $period, $from, $to);
 
-        $jobs = $this->groupList($project, $types, $period, $from, $to)
+        $jobs = $this->groupList($project, $types, $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->job_class = $row->label ?? 'Unknown Job';
                 $row->processed_count = (int) $row->ok_count;
@@ -227,7 +230,7 @@ class RecordService
     /**
      * Exceptions Aggregation
      */
-    public function getExceptionStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getExceptionStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $userDistinct = $this->jsonDistinct('user');
 
@@ -235,7 +238,7 @@ class RecordService
 
         $uniqueTypes = $this->distinctGroups($project, 'exception', $period, $from, $to);
 
-        $exceptions = $this->groupList($project, 'exception', $period, $from, $to, sort: 'last_seen');
+        $exceptions = $this->groupList($project, 'exception', $period, $from, $to, sort: 'last_seen', search: $search);
 
         $userCounts = RecordGroupUserBucket::query()
             ->where('project_id', $project->id)
@@ -268,14 +271,14 @@ class RecordService
     /**
      * Commands Aggregation
      */
-    public function getCommandStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getCommandStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $exitCode = $this->jsonNumeric('exit_code');
         $duration = $this->jsonNumeric('duration');
 
         $overview = $this->rollupTotals($project, 'command', $period, $from, $to);
 
-        $commands = $this->groupList($project, 'command', $period, $from, $to)
+        $commands = $this->groupList($project, 'command', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->command_name = $row->label ?? 'Unknown Command';
                 $row->success_count = (int) $row->ok_count;
@@ -299,7 +302,7 @@ class RecordService
     /**
      * Scheduled Tasks Aggregation
      */
-    public function getScheduledTaskStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getScheduledTaskStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $exitCode = $this->jsonNumeric('exit_code');
         $exitCodeValue = $this->jsonValue('exit_code');
@@ -308,7 +311,7 @@ class RecordService
 
         $overview = $this->rollupTotals($project, 'scheduled-task', $period, $from, $to);
 
-        $tasks = $this->groupList($project, 'scheduled-task', $period, $from, $to)
+        $tasks = $this->groupList($project, 'scheduled-task', $period, $from, $to, search: $search)
             ->through(function ($task) {
                 $task->command = $task->label ?? 'Unknown Task';
                 $task->schedule = $task->sublabel;
@@ -345,13 +348,13 @@ class RecordService
     /**
      * Query Aggregation
      */
-    public function getQueryStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getQueryStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $duration = $this->jsonNumeric('duration');
 
         $overview = $this->rollupTotals($project, 'query', $period, $from, $to);
 
-        $queries = $this->groupList($project, 'query', $period, $from, $to)
+        $queries = $this->groupList($project, 'query', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->sql_query = $row->sublabel;
                 $row->db_connection = $row->label ?? 'mysql';
@@ -374,7 +377,7 @@ class RecordService
     /**
      * Outgoing Requests Aggregation
      */
-    public function getOutgoingRequestStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getOutgoingRequestStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $statusCode = $this->jsonNumeric('status_code');
         $status = $this->jsonNumeric('status');
@@ -383,7 +386,7 @@ class RecordService
 
         $overview = $this->rollupTotals($project, 'outgoing-request', $period, $from, $to);
 
-        $hosts = $this->groupList($project, 'outgoing-request', $period, $from, $to)
+        $hosts = $this->groupList($project, 'outgoing-request', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->host = $row->label;
 
@@ -405,9 +408,9 @@ class RecordService
     /**
      * Outgoing requests grouped by method and normalised endpoint.
      */
-    public function getOutgoingRouteGroups(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): LengthAwarePaginator
+    public function getOutgoingRouteGroups(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): LengthAwarePaginator
     {
-        return $this->groupList($project, 'outgoing-route', $period, $from, $to)
+        return $this->groupList($project, 'outgoing-route', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->method = $row->label;
                 $row->endpoint = $row->sublabel;
@@ -419,13 +422,13 @@ class RecordService
     /**
      * Cache Aggregation
      */
-    public function getCacheStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getCacheStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $cacheType = $this->jsonText('type');
 
         $overview = $this->rollupTotals($project, 'cache-event', $period, $from, $to);
 
-        $keys = $this->groupList($project, 'cache-event', $period, $from, $to)
+        $keys = $this->groupList($project, 'cache-event', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->cache_key = $row->label;
                 $row->hit_rate = $row->total > 0 ? round(((int) $row->hits / (int) $row->total) * 100, 2) : 0;
@@ -448,7 +451,7 @@ class RecordService
     /**
      * Notification Aggregation
      */
-    public function getNotificationStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getNotificationStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $channel = $this->jsonDistinct('channel');
         $status = $this->jsonText('status');
@@ -457,7 +460,7 @@ class RecordService
 
         $channelsCount = $this->distinctGroups($project, 'notification', $period, $from, $to, 'sublabel');
 
-        $notifications = $this->groupList($project, 'notification', $period, $from, $to)
+        $notifications = $this->groupList($project, 'notification', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->notification_class = $row->label;
                 $row->channel = $row->sublabel;
@@ -479,7 +482,7 @@ class RecordService
     /**
      * Mail Aggregation
      */
-    public function getMailStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null): array
+    public function getMailStats(Project $project, ?string $period = null, ?string $from = null, ?string $to = null, ?string $search = null): array
     {
         $mailer = $this->jsonText('mailer');
 
@@ -487,7 +490,7 @@ class RecordService
 
         $uniqueMailables = $this->distinctGroups($project, 'mail', $period, $from, $to);
 
-        $mailables = $this->groupList($project, 'mail', $period, $from, $to)
+        $mailables = $this->groupList($project, 'mail', $period, $from, $to, search: $search)
             ->through(function ($row) {
                 $row->mailable_class = $row->label;
                 $row->queued_count = (int) $row->ok_count;
@@ -613,9 +616,9 @@ class RecordService
     /**
      * Get paginated logs with flattened payload if needed.
      */
-    public function getLogRecords(Project $project, ?string $search = null, ?string $period = null, ?string $from = null, ?string $to = null): LengthAwarePaginator
+    public function getLogRecords(Project $project, ?string $search = null, ?string $period = null, ?string $from = null, ?string $to = null, array $filters = []): LengthAwarePaginator
     {
-        return $this->paginateRawRecords($project, 'log', $search, $period, $from, $to, searchMessage: true)
+        return $this->paginateRawRecords($project, 'log', $search, $period, $from, $to, $filters, searchMessage: true)
             ->through(function ($record) {
                 if (isset($record->payload['payload']) && is_array($record->payload['payload'])) {
                     $record->payload = array_merge($record->payload, $record->payload['payload']);
@@ -628,32 +631,92 @@ class RecordService
     /**
      * Common method to paginate records for a specific type.
      */
-    public function getPaginatedRecords(Project $project, string $type, ?string $search = null, ?string $period = null, ?string $from = null, ?string $to = null): LengthAwarePaginator
+    public function getPaginatedRecords(Project $project, string $type, ?string $search = null, ?string $period = null, ?string $from = null, ?string $to = null, array $filters = []): LengthAwarePaginator
     {
-        return $this->paginateRawRecords($project, $this->resolveRecordType($type), $search, $period, $from, $to);
+        return $this->paginateRawRecords($project, $this->resolveRecordType($type), $search, $period, $from, $to, $filters);
     }
 
     /**
      * A page of raw records, counted by the rollups rather than by the database.
+     *
+     * @param  array{status?: ?string, method?: ?string, level?: ?string, connection?: ?string, handled?: ?string}  $filters
      */
-    protected function paginateRawRecords(Project $project, string $type, ?string $search, ?string $period, ?string $from, ?string $to, bool $searchMessage = false): LengthAwarePaginator
+    protected function paginateRawRecords(Project $project, string $type, ?string $search, ?string $period, ?string $from, ?string $to, array $filters = [], bool $searchMessage = false): LengthAwarePaginator
     {
         $query = $project->records()
             ->ofType($type)
             ->forPeriod($period, $from, $to)
             ->latest();
 
+        $filtered = $this->applyRawFilters($query, $filters);
+
         if ($search) {
             if ($searchMessage) {
                 $this->applyMessageSearch($query, $search);
             } else {
-                $query->where('payload', 'like', '%'.$search.'%');
+                $this->applyPayloadSearch($query, $search);
             }
+        }
 
+        if ($search || $filtered) {
             return $query->paginate(50)->withQueryString();
         }
 
         return $this->paginateWithKnownTotal($query, $this->rollupCount($project, $type, $period, $from, $to));
+    }
+
+    /**
+     * Narrow raw records by payload fields. Returns whether any filter applied.
+     *
+     * Status accepts a class ("4xx") or an exact code ("404").
+     *
+     * @param  Builder<Record>|HasMany<Record, Project>  $query
+     * @param  array{status?: ?string, method?: ?string, level?: ?string, connection?: ?string, handled?: ?string}  $filters
+     */
+    protected function applyRawFilters($query, array $filters): bool
+    {
+        $applied = false;
+        $status = $filters['status'] ?? null;
+
+        if ($status && preg_match('/^([1-5])xx$|^([1-5]\d\d)$/i', $status, $matches)) {
+            $code = "COALESCE({$this->jsonNumeric('status_code')}, {$this->jsonNumeric('status')})";
+
+            if (! empty($matches[1])) {
+                $floor = (int) $matches[1] * 100;
+                $query->whereRaw("{$code} >= ? AND {$code} < ?", [$floor, $floor + 100]);
+            } else {
+                $query->whereRaw("{$code} = ?", [(int) $matches[2]]);
+            }
+
+            $applied = true;
+        }
+
+        $handled = $filters['handled'] ?? null;
+
+        if (in_array($handled, ['yes', 'no'], true)) {
+            $query->whereRaw("{$this->jsonText('handled')} IN (?, ?)", $handled === 'yes' ? ['true', '1'] : ['false', '0']);
+            $applied = true;
+        }
+
+        foreach (['method' => 'upper', 'level' => 'lower', 'connection' => null] as $field => $case) {
+            $value = $filters[$field] ?? null;
+
+            if (! $value) {
+                continue;
+            }
+
+            $value = match ($case) {
+                'upper' => strtoupper($value),
+                'lower' => strtolower($value),
+                default => $value,
+            };
+
+            $column = $this->jsonText($field);
+            $query->whereRaw(($case ? "{$case}({$column})" : $column).' = ?', [$value]);
+            $applied = true;
+        }
+
+        return $applied;
     }
 
     /**
@@ -678,6 +741,37 @@ class RecordService
         }
 
         $query->where('message', 'like', '%'.$term.'%');
+    }
+
+    /**
+     * Case-insensitive substring search over the whole JSON payload.
+     *
+     * The term is JSON-encoded the way the payload text holds it, so values
+     * with slashes or backslashes (URLs, class names) still match.
+     *
+     * @param  Builder<Record>|HasMany<Record, Project>  $query
+     */
+    protected function applyPayloadSearch($query, string $search): void
+    {
+        $driver = DB::connection()->getDriverName();
+        $flags = $driver === 'sqlite' ? 0 : JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+        $encoded = substr(json_encode(trim($search), $flags), 1, -1);
+
+        $column = match ($driver) {
+            'pgsql' => 'payload::jsonb::text',
+            'mysql', 'mariadb' => 'CAST(payload AS CHAR)',
+            default => 'payload',
+        };
+
+        $query->whereRaw("LOWER({$column}) LIKE ? ESCAPE '!'", [$this->likePattern($encoded)]);
+    }
+
+    /**
+     * A lowercase "contains" LIKE pattern escaped with "!".
+     */
+    protected function likePattern(string $term): string
+    {
+        return '%'.mb_strtolower(str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term)).'%';
     }
 
     /**
@@ -939,6 +1033,27 @@ class RecordService
      * @param  array<int, int|string>  $ids
      * @return array<string, array{name: string, email: string}>
      */
+    /**
+     * Match users by id, or by the name, email or username they reported.
+     *
+     * @param  Builder<RecordUserBucket>  $users
+     */
+    private function applyUserSearch(Project $project, $users, string $search): void
+    {
+        $profileQuery = $project->records()->ofType('user');
+        $this->applyPayloadSearch($profileQuery, $search);
+
+        $ids = $profileQuery->selectRaw($this->jsonText('id').' as user_id')->limit(500)->pluck('user_id')
+            ->filter()
+            ->map(fn ($id): string => (string) $id)
+            ->unique()
+            ->all();
+
+        $users->where(fn ($query) => $query
+            ->whereRaw('LOWER('.$this->col('user_key').") LIKE ? ESCAPE '!'", [$this->likePattern($search)])
+            ->orWhereIn('user_key', $ids));
+    }
+
     private function userDetailsByIds(Project $project, array $ids): array
     {
         $ids = collect($ids)
@@ -1277,6 +1392,7 @@ class RecordService
         string $sort = 'total',
         string $direction = 'desc',
         array $sortMap = [],
+        ?string $search = null,
     ): LengthAwarePaginator {
         $sum = fn (string $column, string $alias) => DB::raw('SUM('.$this->col($column).') as '.$alias);
 
@@ -1319,11 +1435,18 @@ class RecordService
             ->groupBy('group_key')
             ->orderBy($orderBy, $direction);
 
-        return $this->paginateWithKnownTotal(
-            $groups,
-            $this->distinctGroups($project, $types, $period, $from, $to),
-            perPage: 20,
-        )
+        if ($search = trim((string) $search)) {
+            $pattern = $this->likePattern($search);
+            $groups->where(fn ($query) => $query
+                ->whereRaw('LOWER('.$this->col('label').") LIKE ? ESCAPE '!'", [$pattern])
+                ->orWhereRaw('LOWER('.$this->col('sublabel').") LIKE ? ESCAPE '!'", [$pattern]));
+        }
+
+        $paginator = $search
+            ? $groups->paginate(20)->withQueryString()
+            : $this->paginateWithKnownTotal($groups, $this->distinctGroups($project, $types, $period, $from, $to), perPage: 20);
+
+        return $paginator
             ->through(function ($row) {
                 $row->p95_duration = $this->p95Duration($row);
                 $row->avg_duration = round((float) $row->avg_duration, 2);

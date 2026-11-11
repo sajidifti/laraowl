@@ -91,7 +91,7 @@ export default function IssueShow({
     const stackTrace = Array.isArray(payload.stack) ? payload.stack : [];
 
     return (
-        <div className="mx-auto max-w-[1600px] animate-in space-y-6 duration-700 fade-in slide-in-from-bottom-4">
+        <div className="mx-auto max-w-[1600px] animate-in space-y-4 duration-700 fade-in slide-in-from-bottom-4">
             <Head title={`Issue #${issue.id} - ${issue.title}`} />
 
             {/* Top Header Section */}
@@ -136,9 +136,9 @@ export default function IssueShow({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
                 {/* Main Content */}
-                <div className="space-y-8 lg:col-span-8">
+                <div className="space-y-5 lg:col-span-8">
                     <div className="mb-4 flex items-center justify-between overflow-x-auto">
                         {stackTrace.length > 0 ? (
                             <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
@@ -230,9 +230,9 @@ export default function IssueShow({
                                                             frame.line
                                                         ) {
                                                             style.backgroundColor =
-                                                                'rgba(var(--primary), 0.1)';
+                                                                'color-mix(in oklch, var(--primary) 10%, transparent)';
                                                             style.borderLeft =
-                                                                '2px solid rgb(var(--primary))';
+                                                                '2px solid var(--primary)';
                                                         }
 
                                                         return { style };
@@ -250,7 +250,7 @@ export default function IssueShow({
 
                     {/* JSON View */}
                     <section>
-                        <Card className="overflow-hidden border-border bg-black shadow-2xl">
+                        <Card className="overflow-hidden border-border bg-card shadow-xs">
                             <CardContent className="p-0">
                                 <CodeBlock
                                     language="json"
@@ -260,7 +260,7 @@ export default function IssueShow({
                                         borderRadius: 0,
                                         fontSize: '11px',
                                         padding: '2rem',
-                                        background: 'rgba(0,0,0,0.4)',
+                                        background: 'transparent',
                                     }}
                                 >
                                     {JSON.stringify(payload, null, 4)}
@@ -352,14 +352,14 @@ export default function IssueShow({
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6 lg:col-span-4">
+                <div className="space-y-4 lg:col-span-4">
                     <Card className="sticky top-6 border-border bg-card/50 shadow-sm">
                         <CardHeader className="border-b border-border/50 bg-muted/10">
                             <CardTitle className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                                 Management
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6 p-6">
+                        <CardContent className="space-y-4 p-4">
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">

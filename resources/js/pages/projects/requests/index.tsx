@@ -16,10 +16,17 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { RawHttpTable } from '@/components/raw-http-table';
+import {
+    METHOD_FILTER,
+    RecordFilters,
+    STATUS_FILTER,
+} from '@/components/record-filters';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -32,12 +39,14 @@ import {
 import { ViewPills } from '@/components/view-pills';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showRequest } from '@/routes/requests';
 
 export default function RequestsIndex({
     requests,
+    search,
     timeSeries,
     stats,
     overview,
@@ -47,8 +56,10 @@ export default function RequestsIndex({
     sort: currentSort = 'total',
     direction: currentDirection = 'desc',
     view = 'raw',
+    filters = {},
 }: {
     requests: any;
+    search?: string | null;
     timeSeries: any;
     stats: any;
     overview: any;
@@ -58,6 +69,7 @@ export default function RequestsIndex({
     sort?: string;
     direction?: string;
     view?: string;
+    filters?: Record<string, string | null>;
 }) {
     const { props }: any = usePage();
     const teamSlug = props.current_team?.slug || props.currentTeam?.slug;
@@ -113,13 +125,13 @@ export default function RequestsIndex({
     const getMethodColor = (method: string) => {
         switch (method?.toUpperCase()) {
             case 'POST':
-                return 'text-emerald-400 font-bold';
+                return 'text-emerald-600 dark:text-emerald-400 font-bold';
             case 'GET':
-                return 'text-blue-400 font-bold';
+                return 'text-blue-600 dark:text-blue-400 font-bold';
             case 'DELETE':
-                return 'text-red-400 font-bold';
+                return 'text-red-600 dark:text-red-400 font-bold';
             case 'PUT':
-                return 'text-yellow-400 font-bold';
+                return 'text-yellow-600 dark:text-yellow-400 font-bold';
             default:
                 return 'text-muted-foreground';
         }
@@ -129,10 +141,10 @@ export default function RequestsIndex({
         <>
             <Head title="Requests Monitoring" />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="group overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="group overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -145,7 +157,7 @@ export default function RequestsIndex({
                                 </div>
                                 <div className="flex gap-4 text-[10px] font-bold tracking-tighter uppercase">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="h-2 w-2 rounded-full bg-white/40"></span>{' '}
+                                        <span className="h-2 w-2 rounded-full bg-foreground/40"></span>{' '}
                                         1/2/3xx{' '}
                                         <span className="ml-1 text-foreground">
                                             {formatCompactNumber(
@@ -173,10 +185,11 @@ export default function RequestsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[80px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Requests')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -238,7 +251,7 @@ export default function RequestsIndex({
                                         <Bar
                                             dataKey="ok"
                                             name="1/2/3xx"
-                                            fill="rgba(255,255,255,0.4)"
+                                            fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                             radius={[2, 2, 0, 0]}
                                             stackId="a"
                                         />
@@ -262,7 +275,7 @@ export default function RequestsIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="group overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="group overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -300,7 +313,7 @@ export default function RequestsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[80px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
                                         <defs>
@@ -323,7 +336,13 @@ export default function RequestsIndex({
                                                 />
                                             </linearGradient>
                                         </defs>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis
+                                            {...valueAxis(
+                                                'Avg duration',
+                                                formatDuration,
+                                            )}
+                                        />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -377,14 +396,30 @@ export default function RequestsIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <ViewPills
-                            current={view}
-                            views={[
-                                { value: 'raw', label: 'Raw' },
-                                { value: 'routes', label: 'By Route' },
-                            ]}
-                        />
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <ViewPills
+                                current={view}
+                                views={[
+                                    { value: 'raw', label: 'Raw' },
+                                    { value: 'routes', label: 'By Route' },
+                                ]}
+                            />
+                            <SearchInput
+                                value={search}
+                                placeholder={
+                                    view === 'raw'
+                                        ? 'Search URL, route, IP, user...'
+                                        : 'Search method or path...'
+                                }
+                            />
+                            {view === 'raw' && (
+                                <RecordFilters
+                                    filters={[STATUS_FILTER, METHOD_FILTER]}
+                                    values={filters}
+                                />
+                            )}
+                        </div>
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Globe className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -406,8 +441,8 @@ export default function RequestsIndex({
                         ) : data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border hover:bg-transparent">
+                                    <TableHeader>
+                                        <TableRow>
                                             <TableHead
                                                 className="cursor-pointer text-[10px] font-bold text-muted-foreground uppercase select-none hover:text-foreground"
                                                 onClick={() =>

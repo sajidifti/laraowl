@@ -52,7 +52,7 @@ export default function InviteMemberModal({
                 <Form
                     key={String(open)}
                     {...storeInvitation.form(team.slug)}
-                    className="space-y-6"
+                    className="space-y-4"
                     onSuccess={() => onOpenChange(false)}
                 >
                     {({ errors, processing }) => (

@@ -13,11 +13,11 @@ import { show as showRecord } from '@/routes/records';
 
 const methodColor = (method?: string) =>
     ({
-        GET: 'text-blue-400',
-        POST: 'text-emerald-400',
-        PUT: 'text-yellow-400',
-        PATCH: 'text-yellow-400',
-        DELETE: 'text-red-400',
+        GET: 'text-blue-600 dark:text-blue-400',
+        POST: 'text-emerald-600 dark:text-emerald-400',
+        PUT: 'text-yellow-600 dark:text-yellow-400',
+        PATCH: 'text-yellow-600 dark:text-yellow-400',
+        DELETE: 'text-red-600 dark:text-red-400',
     })[method?.toUpperCase() ?? ''] ?? 'text-muted-foreground';
 
 const statusColor = (status?: number) => {
@@ -71,9 +71,9 @@ export function RawHttpTable({
 
     return (
         <Table>
-            <TableHeader className="bg-muted/30">
-                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                    <TableHead className="pl-6">Time</TableHead>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Time</TableHead>
                     <TableHead>Method</TableHead>
                     <TableHead>{showHost ? 'URL' : 'Path'}</TableHead>
                     <TableHead className="text-center">Status</TableHead>
@@ -93,7 +93,7 @@ export function RawHttpTable({
                             key={record.id}
                             className="group border-border transition-colors hover:bg-muted/30"
                         >
-                            <TableCell className="pl-6 font-mono text-xs whitespace-nowrap text-muted-foreground">
+                            <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
                                 {new Date(record.created_at).toLocaleString()}
                             </TableCell>
                             <TableCell

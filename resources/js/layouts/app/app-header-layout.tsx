@@ -10,8 +10,8 @@ export default function AppHeaderLayout({
     return (
         <AppShell variant="header">
             <AppHeader breadcrumbs={breadcrumbs} />
-            <AppContent variant="header" className="min-h-screen bg-[#050505]">
-                <div className="mx-auto w-full max-w-7xl animate-in space-y-8 p-6 duration-500 fade-in md:p-8">
+            <AppContent variant="header" className="min-h-screen bg-background">
+                <div className="mx-auto w-full max-w-[1800px] animate-in space-y-4 p-4 duration-300 fade-in md:px-5">
                     {children}
                 </div>
             </AppContent>

@@ -23,7 +23,7 @@ export function Pagination({ meta }: { links?: any; meta: any }) {
 
     const arrow = (url: string | null, icon: React.ReactNode, key: string) => {
         const className =
-            'rounded p-1.5 transition-colors hover:bg-white/10 flex items-center justify-center';
+            'rounded p-1.5 transition-colors hover:bg-foreground/10 flex items-center justify-center';
 
         if (!url) {
             return (
@@ -51,7 +51,7 @@ export function Pagination({ meta }: { links?: any; meta: any }) {
     };
 
     return (
-        <div className="flex items-center justify-between gap-4 border-t border-border bg-white/[0.01] p-4">
+        <div className="flex items-center justify-between gap-4 border-t border-border bg-foreground/[0.01] p-4">
             <div className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                 Showing {meta.from} to {meta.to} of {meta.total} results
             </div>
@@ -75,7 +75,7 @@ export function Pagination({ meta }: { links?: any; meta: any }) {
                             href={link.url}
                             preserveScroll
                             preserveState
-                            className={`flex h-7 min-w-[28px] items-center justify-center rounded text-xs font-bold transition-all ${link.active ? 'border border-border bg-white/10 text-foreground' : 'text-gray-500 hover:bg-muted hover:text-foreground'}`}
+                            className={`flex h-7 min-w-[28px] items-center justify-center rounded text-xs font-bold transition-all ${link.active ? 'border border-border bg-foreground/10 text-foreground' : 'text-gray-500 hover:bg-muted hover:text-foreground'}`}
                         >
                             {link.label}
                         </Link>

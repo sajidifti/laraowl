@@ -41,7 +41,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                 <Form
                     key={String(open)}
                     {...destroy.form(team.slug)}
-                    className="space-y-6"
+                    className="space-y-4"
                     onSuccess={() => handleOpenChange(false)}
                 >
                     {({ errors, processing }) => (
@@ -55,7 +55,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                 </DialogDescription>
                             </DialogHeader>
 
-                            <div className="space-y-4 py-4">
+                            <div className="space-y-4 py-2.5">
                                 <div className="grid gap-2">
                                     <Label htmlFor="confirmation-name">
                                         Type <strong>"{team.name}"</strong> to

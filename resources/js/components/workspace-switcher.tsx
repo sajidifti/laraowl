@@ -68,17 +68,19 @@ export function WorkspaceSwitcher({
                     className={
                         inHeader
                             ? 'h-9 max-w-[200px] gap-2 rounded-lg border border-border px-3 text-foreground/70 transition-all hover:bg-muted hover:text-foreground'
-                            : 'group w-full justify-start border border-border bg-muted/30 px-2 py-8 transition-all group-data-[collapsible=icon]:py-4 hover:bg-white/[0.05]'
+                            : 'group h-10 w-full justify-start gap-2 rounded-md border border-border bg-muted/30 px-2 transition-colors group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 hover:bg-foreground/5'
                     }
                 >
                     <div
                         className={
                             inHeader
-                                ? 'flex aspect-square size-5 shrink-0 items-center justify-center rounded bg-blue-600/20 text-blue-400'
-                                : 'mr-3 flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-foreground group-data-[collapsible=icon]:mr-0 group-data-[collapsible=icon]:size-6'
+                                ? 'flex aspect-square size-5 shrink-0 items-center justify-center rounded bg-blue-600/20 text-blue-600 dark:text-blue-400'
+                                : 'flex aspect-square size-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted text-foreground'
                         }
                     >
-                        <Terminal className={inHeader ? 'size-3' : 'size-4'} />
+                        <Terminal
+                            className={inHeader ? 'size-3' : 'size-3.5'}
+                        />
                     </div>
                     <div
                         className={
@@ -93,17 +95,17 @@ export function WorkspaceSwitcher({
                                 className={
                                     inHeader
                                         ? 'truncate text-[11px] font-bold tracking-tight text-foreground'
-                                        : 'truncate text-sm font-bold tracking-tight text-foreground uppercase'
+                                        : 'truncate text-xs font-semibold text-foreground'
                                 }
                             >
                                 {currentTeam?.name ?? 'Select Team'}
                             </span>
                         </div>
-                        <div className="mt-0.5 flex w-full items-center gap-1">
-                            <Layout className="size-2.5 shrink-0 text-foreground/40" />
+                        <div className="flex w-full items-center gap-1">
+                            <Layout className="size-2.5 shrink-0 text-muted-foreground" />
                             <span
                                 title={currentProject?.name}
-                                className="truncate text-[10px] font-medium tracking-tight text-foreground/60"
+                                className="truncate text-[10px] text-muted-foreground"
                             >
                                 {currentProject?.name ?? 'No Project'}
                             </span>
@@ -113,13 +115,13 @@ export function WorkspaceSwitcher({
                         className={
                             inHeader
                                 ? 'ml-1 size-3 shrink-0 text-foreground/20'
-                                : 'ml-auto size-4 shrink-0 text-foreground/20 group-data-[collapsible=icon]:hidden'
+                                : 'ml-auto size-3.5 shrink-0 text-muted-foreground group-data-[collapsible=icon]:hidden'
                         }
                     />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-72 overflow-hidden rounded-xl border-border bg-card p-0 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                className="w-72 overflow-hidden border-border bg-popover p-0 shadow-lg"
                 side={inHeader ? 'bottom' : isMobile ? 'bottom' : 'right'}
                 align={inHeader ? 'end' : 'start'}
                 sideOffset={inHeader ? 8 : 4}
@@ -174,7 +176,7 @@ export function WorkspaceSwitcher({
                                                 onSelect={() =>
                                                     switchProject(project)
                                                 }
-                                                className="group mx-1 flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-white/[0.03]"
+                                                className="group mx-1 flex cursor-pointer items-center justify-between gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-foreground/[0.03]"
                                             >
                                                 <div className="flex min-w-0 items-center gap-3">
                                                     <div

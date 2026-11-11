@@ -1,11 +1,11 @@
 "use client"
 
-import { useTheme } from "next-themes"
+import { useAppearance } from "@/hooks/use-appearance"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckCircleIcon, InfoIcon, WarningIcon, XCircleIcon, SpinnerIcon } from "@phosphor-icons/react"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const { appearance: theme } = useAppearance()
 
   return (
     <Sonner

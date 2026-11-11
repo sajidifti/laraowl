@@ -12,9 +12,12 @@ export default function AppSidebarLayout({
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
-            <AppContent variant="sidebar" className="min-h-screen bg-[#050505]">
+            <AppContent
+                variant="sidebar"
+                className="min-h-screen min-w-0 bg-background"
+            >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                <div className="mx-auto w-full max-w-7xl animate-in space-y-8 p-6 duration-500 fade-in md:p-8">
+                <div className="mx-auto w-full max-w-[1800px] animate-in space-y-4 p-4 duration-300 fade-in md:px-5">
                     <UpdateBanner />
                     {children}
                 </div>

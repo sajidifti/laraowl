@@ -123,3 +123,44 @@ test('the backfill lifts trace_id out of legacy payloads', function () {
 
     expect(Record::where('project_id', $project->id)->value('trace_id'))->toBe('legacy-trace');
 });
+
+test('an event occurrence links back to the execution that produced it', function () {
+    [$user, $team, $project] = actingMember();
+
+    app(IngestService::class)->ingest($project, [
+        ['t' => 'request', 'status_code' => 200, 'route_path' => '/checkout', 'trace_id' => 't-1'],
+        ['t' => 'log', 'level' => 'info', 'message' => 'checked out', 'trace_id' => 't-1'],
+    ]);
+
+    $request = Record::where('project_id', $project->id)->where('type', 'request')->first();
+    $log = Record::where('project_id', $project->id)->where('type', 'log')->first();
+
+    $this->actingAs($user)
+        ->get(route('records.show', [
+            'current_team' => $team->slug,
+            'project' => $project->slug,
+            'record' => $log->id,
+        ]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('record.payload.message', 'checked out')
+            ->where('parentRecord.id', $request->id)
+            ->has('relatedRecords', 0)
+        );
+});
+
+test('an event redirects to its execution, or to itself when it has none', function () {
+    [$user, $team, $project] = actingMember();
+
+    app(IngestService::class)->ingest($project, [
+        ['t' => 'request', 'status_code' => 200, 'route_path' => '/checkout', 'trace_id' => 't-1'],
+        ['t' => 'log', 'level' => 'info', 'message' => 'traced', 'trace_id' => 't-1'],
+        ['t' => 'log', 'level' => 'info', 'message' => 'orphan'],
+    ]);
+
+    $records = Record::where('project_id', $project->id)->get()->keyBy(fn ($r) => $r->payload['message'] ?? $r->type);
+    $url = fn (Record $record, string $name = 'records.execution') => route($name, ['current_team' => $team->slug, 'project' => $project->slug, 'record' => $record->id]);
+
+    $this->actingAs($user)->get($url($records['traced']))->assertRedirect($url($records['request'], 'records.show'));
+    $this->actingAs($user)->get($url($records['orphan']))->assertRedirect($url($records['orphan'], 'records.show'));
+});

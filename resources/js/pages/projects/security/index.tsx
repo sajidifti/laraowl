@@ -99,11 +99,11 @@ export default function SecurityIndex({
                     Authentication Guard
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {/* Brute Force Indicator */}
                     <Card className="group overflow-hidden border-border bg-card/50 shadow-sm">
-                        <CardContent className="relative flex items-center justify-between p-8">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] transition-opacity group-hover:opacity-[0.05]">
+                        <CardContent className="relative flex items-center justify-between p-5">
+                            <div className="absolute top-0 right-0 p-5 opacity-[0.03] transition-opacity group-hover:opacity-[0.05]">
                                 <ShieldAlert className="size-32 text-primary" />
                             </div>
                             <div className="relative space-y-1">

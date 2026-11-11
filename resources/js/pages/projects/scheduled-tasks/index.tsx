@@ -9,9 +9,11 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -24,12 +26,14 @@ import {
 } from '@/components/ui/table';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showScheduledTask } from '@/routes/scheduled-tasks';
 
 export default function ScheduledTasksIndex({
     tasks,
+    search,
     timeSeries = [],
     overview,
     period,
@@ -37,6 +41,7 @@ export default function ScheduledTasksIndex({
     to,
 }: {
     tasks: any;
+    search?: string | null;
     timeSeries: any;
     overview: any;
     period?: string | null;
@@ -78,12 +83,12 @@ export default function ScheduledTasksIndex({
         <>
             <Head title="Scheduled Tasks" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -92,10 +97,11 @@ export default function ScheduledTasksIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Runs')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -157,7 +163,7 @@ export default function ScheduledTasksIndex({
                                         <Bar
                                             dataKey="ok"
                                             name="Success"
-                                            fill="rgba(255,255,255,0.4)"
+                                            fill="color-mix(in oklch, var(--foreground) 40%, transparent)"
                                             radius={[2, 2, 0, 0]}
                                             stackId="a"
                                         />
@@ -174,7 +180,7 @@ export default function ScheduledTasksIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -185,10 +191,16 @@ export default function ScheduledTasksIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis
+                                            {...valueAxis(
+                                                'Avg duration',
+                                                formatDuration,
+                                            )}
+                                        />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -243,7 +255,11 @@ export default function ScheduledTasksIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <SearchInput
+                            value={search}
+                            placeholder={'Search task or schedule...'}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -257,11 +273,9 @@ export default function ScheduledTasksIndex({
                         {data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                Task
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Task</TableHead>
                                             <TableHead>Schedule</TableHead>
                                             <TableHead>Next Run</TableHead>
                                             <TableHead className="text-center">
@@ -273,7 +287,7 @@ export default function ScheduledTasksIndex({
                                             <TableHead className="text-right">
                                                 Avg
                                             </TableHead>
-                                            <TableHead className="pr-6 text-right">
+                                            <TableHead className="text-right">
                                                 P95
                                             </TableHead>
                                         </TableRow>
@@ -285,7 +299,7 @@ export default function ScheduledTasksIndex({
                                                     key={index}
                                                     className="group border-border transition-colors hover:bg-muted/30"
                                                 >
-                                                    <TableCell className="pl-6">
+                                                    <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <Terminal className="h-3 w-3 text-muted-foreground/50" />
                                                             <span className="font-mono text-xs text-foreground/90">
@@ -296,7 +310,7 @@ export default function ScheduledTasksIndex({
                                                     <TableCell>
                                                         <Badge
                                                             variant="outline"
-                                                            className="border-border bg-muted font-mono text-[10px] text-blue-400"
+                                                            className="border-border bg-muted font-mono text-[10px] text-blue-600 dark:text-blue-400"
                                                         >
                                                             {task.schedule ||
                                                                 'N/A'}
@@ -327,7 +341,7 @@ export default function ScheduledTasksIndex({
                                                             task.avg_duration,
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="pr-6 text-right font-mono text-xs font-bold text-foreground/90">
+                                                    <TableCell className="text-right font-mono text-xs font-bold text-foreground/90">
                                                         <div className="flex items-center justify-end gap-2">
                                                             <span>
                                                                 {formatMicroSeconds(

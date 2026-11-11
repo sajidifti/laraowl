@@ -53,12 +53,12 @@ export default function UserShow({
         <>
             <Head title={`User - ${displayName}`} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
                 {/* Header Section */}
-                <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-6 shadow-2xl">
+                <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 shadow-xs">
                     <div className="rounded-full bg-emerald-500/10 p-3">
                         <User className="h-8 w-8 text-emerald-500" />
                     </div>
@@ -78,9 +78,9 @@ export default function UserShow({
                 </div>
 
                 {/* Info & Stats Row */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     <Card className="border-border bg-card lg:col-span-1">
-                        <CardContent className="space-y-4 p-6 text-sm">
+                        <CardContent className="space-y-4 p-4 text-sm">
                             <div className="border-b border-border pb-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                 Activity Info
                             </div>
@@ -121,10 +121,10 @@ export default function UserShow({
                         </CardContent>
                     </Card>
 
-                    <Card className="flex flex-col items-center justify-center overflow-hidden border-border bg-card p-6 lg:col-span-2">
-                        <div className="flex gap-8">
+                    <Card className="flex flex-col items-center justify-center overflow-hidden border-border bg-card p-4 lg:col-span-2">
+                        <div className="flex gap-5">
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-foreground">
+                                <div className="text-2xl font-bold text-foreground">
                                     {formatCompactNumber(stats.total)}
                                 </div>
                                 <div className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -132,7 +132,7 @@ export default function UserShow({
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-emerald-500">
+                                <div className="text-2xl font-bold text-emerald-500">
                                     {formatCompactNumber(
                                         stats.ok_count || stats.total,
                                     )}
@@ -142,7 +142,7 @@ export default function UserShow({
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-3xl font-bold text-red-500">
+                                <div className="text-2xl font-bold text-red-500">
                                     {formatCompactNumber(
                                         stats.error_count || 0,
                                     )}
@@ -174,10 +174,10 @@ export default function UserShow({
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                         <Table>
-                            <TableHeader className="bg-muted/30">
-                                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                            <TableHeader>
+                                <TableRow>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Method</TableHead>
                                     <TableHead>URL</TableHead>
@@ -202,7 +202,7 @@ export default function UserShow({
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
-                                                className={`text-[10px] font-bold uppercase ${record.type === 'request' ? (record.payload.method === 'POST' ? 'border-blue-400/20 text-blue-400' : 'border-emerald-400/20 text-emerald-400') : 'border-orange-400/20 text-orange-400'}`}
+                                                className={`text-[10px] font-bold uppercase ${record.type === 'request' ? (record.payload.method === 'POST' ? 'border-blue-400/20 text-blue-600 dark:text-blue-400' : 'border-emerald-400/20 text-emerald-600 dark:text-emerald-400') : 'border-orange-400/20 text-orange-600 dark:text-orange-400'}`}
                                             >
                                                 {record.type === 'request'
                                                     ? record.payload.method

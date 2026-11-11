@@ -14,6 +14,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { ConnectCloudflare } from './components/connect-cloudflare';
 
@@ -89,7 +97,7 @@ export default function FirewallAudit({
         <div>
             <Head title="Firewall Audit Log" />
 
-            <div className="animate-in space-y-8 duration-700 fade-in">
+            <div className="animate-in space-y-5 duration-700 fade-in">
                 {/* Secondary Nav */}
                 <div className="flex items-center gap-1 border-b border-border/50 pb-4">
                     {navItems.map((item) => (
@@ -111,7 +119,7 @@ export default function FirewallAudit({
                 {!isConfigured ? (
                     <ConnectCloudflare />
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <h2 className="text-xl font-black tracking-tight text-foreground">
@@ -132,51 +140,41 @@ export default function FirewallAudit({
 
                         <Card className="overflow-hidden border-border bg-card shadow-xl">
                             <div className="overflow-x-auto">
-                                <table className="w-full border-collapse text-left">
-                                    <thead>
-                                        <tr className="border-b border-border bg-muted/30">
-                                            <th className="p-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                                Action
-                                            </th>
-                                            <th className="p-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                                Description
-                                            </th>
-                                            <th className="p-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                                Target
-                                            </th>
-                                            <th className="p-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                                Changed By
-                                            </th>
-                                            <th className="p-4 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                                                Date
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Action</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead>Target</TableHead>
+                                            <TableHead>Changed By</TableHead>
+                                            <TableHead>Date</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
                                         {logs.map((log) => (
-                                            <tr
+                                            <TableRow
                                                 key={log.id}
                                                 className="group transition-colors hover:bg-muted/20"
                                             >
-                                                <td className="p-4">
+                                                <TableCell>
                                                     <ActionBadge
                                                         action={log.action}
                                                     />
-                                                </td>
-                                                <td className="p-4">
+                                                </TableCell>
+                                                <TableCell>
                                                     <span className="text-xs font-bold text-foreground">
                                                         {log.description}
                                                     </span>
-                                                </td>
-                                                <td className="p-4">
+                                                </TableCell>
+                                                <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <Globe className="size-3.5 text-muted-foreground" />
                                                         <code className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
                                                             {log.target}
                                                         </code>
                                                     </div>
-                                                </td>
-                                                <td className="p-4">
+                                                </TableCell>
+                                                <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex size-6 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-[10px] font-black text-primary">
                                                             {log.user.charAt(0)}
@@ -185,19 +183,19 @@ export default function FirewallAudit({
                                                             {log.user}
                                                         </span>
                                                     </div>
-                                                </td>
-                                                <td className="p-4">
+                                                </TableCell>
+                                                <TableCell>
                                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                         <Clock className="size-3.5" />
                                                         {new Date(
                                                             log.created_at,
                                                         ).toLocaleString()}
                                                     </div>
-                                                </td>
-                                            </tr>
+                                                </TableCell>
+                                            </TableRow>
                                         ))}
-                                    </tbody>
-                                </table>
+                                    </TableBody>
+                                </Table>
                             </div>
                         </Card>
 

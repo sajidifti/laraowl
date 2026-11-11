@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { CodeBlock } from '@/components/code-block';
+import { EventRecordDetails } from '@/components/event-record-details';
 import { RelatedRecordsTable } from '@/components/related-records-table';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -28,10 +29,12 @@ import { show as showRecord } from '@/routes/records';
 export default function RecordShow({
     record,
     relatedRecords = [],
+    parentRecord,
     highlight_record_id,
 }: {
     record: any;
     relatedRecords?: any[];
+    parentRecord?: any;
     highlight_record_id?: number;
 }) {
     const { props: pageProps }: any = usePage();
@@ -161,6 +164,12 @@ export default function RecordShow({
     };
 
     const isRequest = record.type === 'request';
+    const isExecution = [
+        'request',
+        'command',
+        'scheduled-task',
+        'job-attempt',
+    ].includes(record.type);
     const isJob = ['job-attempt', 'queued-job'].includes(record.type);
     const isCommand = ['command', 'scheduled-task'].includes(record.type);
     const isQuery = record.type === 'query';
@@ -181,11 +190,23 @@ export default function RecordShow({
             ? payload.arguments || 'No arguments'
             : '';
 
+    if (!isExecution) {
+        return (
+            <>
+                <Head title={`${record.type.toUpperCase()} Details`} />
+                <EventRecordDetails
+                    record={record}
+                    parentRecord={parentRecord}
+                />
+            </>
+        );
+    }
+
     return (
         <>
             <Head title={`${record.type.toUpperCase()} Details - ${title}`} />
 
-            <div className="mb-8 space-y-4">
+            <div className="mb-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -206,11 +227,11 @@ export default function RecordShow({
                 </div>
             </div>
 
-            <div className="max-w-7xl space-y-6">
+            <div className="max-w-7xl space-y-4">
                 {/* Main Info Card */}
-                <Card className="border-border bg-card p-8 shadow-2xl">
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 font-mono text-sm text-emerald-400">
+                <Card className="border-border bg-card p-5 shadow-xs">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 font-mono text-sm text-emerald-600 dark:text-emerald-400">
                             <Globe className="h-4 w-4" />
                             <span className="break-all">
                                 {payload.url ||
@@ -421,7 +442,7 @@ export default function RecordShow({
                 </Card>
 
                 {/* Headers Card */}
-                <Card className="border-border bg-card shadow-2xl">
+                <Card className="border-border bg-card shadow-xs">
                     <Collapsible
                         open={expandedHeaders}
                         onOpenChange={setExpandedHeaders}
@@ -441,7 +462,7 @@ export default function RecordShow({
                             </div>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                            <div className="border-t border-border p-6 text-xs">
+                            <div className="border-t border-border p-4 text-xs">
                                 {(() => {
                                     let headersObj = payload.headers || {};
 
@@ -460,7 +481,7 @@ export default function RecordShow({
                                             customStyle={{
                                                 margin: 0,
                                                 borderRadius: '0.5rem',
-                                                border: '1px solid hsl(var(--border))',
+                                                border: '1px solid var(--border)',
                                             }}
                                             wrapLines={true}
                                             wrapLongLines={true}
@@ -502,7 +523,7 @@ export default function RecordShow({
                     }
 
                     return (
-                        <Card className="border-border bg-card shadow-2xl">
+                        <Card className="border-border bg-card shadow-xs">
                             <Collapsible
                                 open={expandedPayload}
                                 onOpenChange={setExpandedPayload}
@@ -522,14 +543,14 @@ export default function RecordShow({
                                     </div>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
-                                    <div className="border-t border-border p-6 text-xs">
+                                    <div className="border-t border-border p-4 text-xs">
                                         <CodeBlock
                                             language="json"
                                             style={vscDarkPlus}
                                             customStyle={{
                                                 margin: 0,
                                                 borderRadius: '0.5rem',
-                                                border: '1px solid hsl(var(--border))',
+                                                border: '1px solid var(--border)',
                                             }}
                                             wrapLines={true}
                                             wrapLongLines={true}
@@ -546,8 +567,8 @@ export default function RecordShow({
                 })()}
 
                 {/* Timeline Card */}
-                <Card className="border-border bg-card p-8 shadow-2xl">
-                    <div className="mb-8 flex items-center justify-between">
+                <Card className="border-border bg-card p-5 shadow-xs">
+                    <div className="mb-5 flex items-center justify-between">
                         <h3 className="text-xs font-bold text-foreground uppercase">
                             Timeline
                         </h3>
@@ -569,7 +590,7 @@ export default function RecordShow({
                                     </span>
                                 </div>
                                 <div className="flex h-5 items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/20 px-2">
-                                    <span className="text-[9px] font-bold text-emerald-400 uppercase">
+                                    <span className="text-[9px] font-bold text-emerald-600 uppercase dark:text-emerald-400">
                                         {record.type.toUpperCase()}
                                     </span>
                                     {isRequest && (
@@ -614,7 +635,7 @@ export default function RecordShow({
                                         {relatedRecords.map((sub, i) => (
                                             <div
                                                 key={i}
-                                                className={`group flex items-center justify-between ${highlight_record_id === sub.id ? 'rounded ring-1 ring-blue-500 ring-offset-2 ring-offset-[#111111]' : ''}`}
+                                                className={`group flex items-center justify-between ${highlight_record_id === sub.id ? 'rounded ring-1 ring-blue-500 ring-offset-2 ring-offset-background' : ''}`}
                                             >
                                                 <div className="ml-4 flex items-center gap-2">
                                                     <div
@@ -633,12 +654,12 @@ export default function RecordShow({
                                                     className={`flex h-6 min-w-[80px] items-center justify-between rounded border px-3 ${sub.type === 'query' ? 'border-blue-500/20 bg-blue-500/10' : 'border-red-500/20 bg-red-500/10'}`}
                                                 >
                                                     <span
-                                                        className={`text-[10px] font-bold uppercase ${sub.type === 'query' ? 'text-blue-400' : 'text-red-400'}`}
+                                                        className={`text-[10px] font-bold uppercase ${sub.type === 'query' ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}
                                                     >
                                                         {sub.type}
                                                     </span>
                                                     <span
-                                                        className={`font-mono text-[10px] ${sub.type === 'query' ? 'text-blue-400' : 'text-red-400'}`}
+                                                        className={`font-mono text-[10px] ${sub.type === 'query' ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}
                                                     >
                                                         {sub.type === 'query'
                                                             ? (
@@ -674,7 +695,7 @@ export default function RecordShow({
                                 )}
 
                                 {!isRequest && (
-                                    <div className="flex items-center justify-center p-8 text-xs text-muted-foreground italic">
+                                    <div className="flex items-center justify-center p-5 text-xs text-muted-foreground italic">
                                         Detailed timeline not available for this
                                         record type.
                                     </div>

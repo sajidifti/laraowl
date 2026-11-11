@@ -8,9 +8,11 @@ import {
     Area,
     Tooltip,
     XAxis,
+    YAxis,
 } from 'recharts';
 import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
+import { SearchInput } from '@/components/search-input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -22,12 +24,14 @@ import {
 } from '@/components/ui/table';
 import { useLiveReload } from '@/hooks/use-live-reload';
 import AppLayout from '@/layouts/app-layout';
+import { formatDuration, timeAxis, valueAxis } from '@/lib/chart-axes';
 import { monitoringQuery } from '@/lib/monitoring-query';
 import { formatMicroSeconds, formatCompactNumber } from '@/lib/utils';
 import { show as showJob } from '@/routes/jobs';
 
 export default function JobsIndex({
     jobs,
+    search,
     timeSeries = [],
     overview,
     period,
@@ -35,6 +39,7 @@ export default function JobsIndex({
     to,
 }: {
     jobs: any;
+    search?: string | null;
     timeSeries: any;
     overview: any;
     period?: string | null;
@@ -64,12 +69,12 @@ export default function JobsIndex({
         <>
             <Head title="Jobs" />
 
-            <div className="mb-8 space-y-4"></div>
+            <div className="mb-5 space-y-4"></div>
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -101,10 +106,11 @@ export default function JobsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-[72px] w-full">
+                            <div className="h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis {...valueAxis('Jobs')} />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -183,7 +189,7 @@ export default function JobsIndex({
                         </CardContent>
                     </Card>
 
-                    <Card className="overflow-hidden border-border bg-card shadow-2xl">
+                    <Card className="overflow-hidden border-border bg-card shadow-xs">
                         <CardContent className="p-4">
                             <div className="mb-3 flex items-start justify-between">
                                 <div>
@@ -206,10 +212,16 @@ export default function JobsIndex({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative h-[72px] w-full">
+                            <div className="relative h-[150px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={timeSeries}>
-                                        <XAxis dataKey="minute" hide />
+                                        <XAxis {...timeAxis()} />
+                                        <YAxis
+                                            {...valueAxis(
+                                                'Avg duration',
+                                                formatDuration,
+                                            )}
+                                        />
                                         <Tooltip
                                             content={({ active, payload }) => {
                                                 if (
@@ -229,10 +241,11 @@ export default function JobsIndex({
                                                             <div className="flex items-center gap-2">
                                                                 <div className="h-2 w-2 rounded-full bg-blue-500" />
                                                                 <span className="text-[10px] font-medium text-muted-foreground uppercase">
-                                                                    Total Jobs:
+                                                                    Avg
+                                                                    Duration:
                                                                 </span>
                                                                 <span className="text-[10px] font-bold text-foreground">
-                                                                    {formatCompactNumber(
+                                                                    {formatMicroSeconds(
                                                                         payload[0]
                                                                             .value,
                                                                     )}
@@ -247,8 +260,8 @@ export default function JobsIndex({
                                         />
                                         <Area
                                             type="monotone"
-                                            dataKey="total"
-                                            name="Total Jobs"
+                                            dataKey="avg_duration"
+                                            name="Avg Duration"
                                             stroke="#3b82f6"
                                             fill="#3b82f6"
                                             fillOpacity={0.1}
@@ -263,7 +276,11 @@ export default function JobsIndex({
 
                 {/* Table Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <SearchInput
+                            value={search}
+                            placeholder={'Search job class...'}
+                        />
                         <div className="flex items-center gap-2 font-bold text-foreground">
                             <Cpu className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -276,11 +293,9 @@ export default function JobsIndex({
                         {data.length > 0 ? (
                             <>
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
-                                        <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                                            <TableHead className="pl-6">
-                                                Job
-                                            </TableHead>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Job</TableHead>
                                             <TableHead className="text-right">
                                                 Processed
                                             </TableHead>
@@ -296,7 +311,7 @@ export default function JobsIndex({
                                             <TableHead className="text-right">
                                                 P95
                                             </TableHead>
-                                            <TableHead className="w-[50px] pr-6"></TableHead>
+                                            <TableHead className="w-[50px]"></TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -305,7 +320,7 @@ export default function JobsIndex({
                                                 key={index}
                                                 className="group border-border transition-colors hover:bg-muted/30"
                                             >
-                                                <TableCell className="pl-6">
+                                                <TableCell>
                                                     <Link
                                                         href={jobDetailsHref(
                                                             job.hash,
@@ -352,7 +367,7 @@ export default function JobsIndex({
                                                         job.p95_duration,
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="pr-6">
+                                                <TableCell>
                                                     <Link
                                                         href={jobDetailsHref(
                                                             job.hash,

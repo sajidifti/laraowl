@@ -48,7 +48,7 @@ export default function JobShow({
         <>
             <Head title={`Job - ${jobClass}`} />
 
-            <div className="space-y-8">
+            <div className="space-y-5">
                 {/* Back Link */}
                 <div className="flex items-center gap-2"></div>
 
@@ -67,10 +67,10 @@ export default function JobShow({
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
+                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
                     <Table>
-                        <TableHeader className="bg-muted/30">
-                            <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
+                        <TableHeader>
+                            <TableRow>
                                 <TableHead>Execution Time</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">

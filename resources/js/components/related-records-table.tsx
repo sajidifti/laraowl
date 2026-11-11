@@ -18,7 +18,7 @@ type Column = {
 };
 
 const mono = 'font-mono text-xs text-foreground/90';
-const wide = `${mono} max-w-[480px] truncate`;
+const wide = `${mono} w-full max-w-0 truncate`;
 
 const statusColor = (status?: number) =>
     !status
@@ -98,34 +98,66 @@ const columns: Record<string, Column[]> = {
         },
         { label: 'Message', className: wide, render: (p) => p.message },
     ],
+    command: [
+        { label: 'Command', className: wide, render: (p) => p.command },
+        {
+            label: 'Exit Code',
+            className: 'text-center font-mono text-xs font-bold',
+            render: (p) => (
+                <span
+                    className={
+                        p.exit_code === 0
+                            ? 'text-emerald-600 dark:text-emerald-500'
+                            : 'text-red-500'
+                    }
+                >
+                    {p.exit_code ?? '—'}
+                </span>
+            ),
+        },
+        duration,
+    ],
     exception: [
         { label: 'Class', className: mono, render: (p) => p.class },
         { label: 'Message', className: wide, render: (p) => p.message },
     ],
 };
 
+const source: Column = {
+    label: 'Source',
+    className: `${mono} max-w-[260px] truncate text-muted-foreground`,
+    render: (p) => p.execution_preview,
+};
+
 export function RelatedRecordsTable({
     type,
     records,
     hrefFor,
+    showDate = false,
+    showSource = false,
 }: {
     type: string;
     records: any[];
     hrefFor: (id: number) => string;
+    showDate?: boolean;
+    showSource?: boolean;
 }) {
-    const typeColumns = columns[type] ?? [
-        {
-            label: 'Details',
-            className: wide,
-            render: (p: any) => p.message || JSON.stringify(p),
-        },
+    const typeColumns = [
+        ...(columns[type] ?? [
+            {
+                label: 'Details',
+                className: wide,
+                render: (p: any) => p.message || JSON.stringify(p),
+            },
+        ]),
+        ...(showSource ? [source] : []),
     ];
 
     return (
         <Table>
-            <TableHeader className="bg-muted/30">
-                <TableRow className="border-border text-[10px] font-bold text-muted-foreground uppercase hover:bg-transparent">
-                    <TableHead className="pl-4">Time</TableHead>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Time</TableHead>
                     {typeColumns.map((column) => (
                         <TableHead
                             key={column.label}
@@ -152,10 +184,14 @@ export function RelatedRecordsTable({
                             key={record.id}
                             className="group border-border transition-colors hover:bg-muted/30"
                         >
-                            <TableCell className="pl-4 font-mono text-xs whitespace-nowrap text-muted-foreground">
-                                {new Date(
-                                    record.created_at,
-                                ).toLocaleTimeString()}
+                            <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">
+                                {showDate
+                                    ? new Date(
+                                          record.created_at,
+                                      ).toLocaleString()
+                                    : new Date(
+                                          record.created_at,
+                                      ).toLocaleTimeString()}
                             </TableCell>
                             {typeColumns.map((column) => (
                                 <TableCell

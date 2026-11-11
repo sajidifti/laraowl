@@ -71,9 +71,9 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="overflow-hidden rounded-2xl border border-border bg-[#09090b] p-0 text-foreground shadow-2xl sm:max-w-[440px]">
+            <DialogContent className="overflow-hidden rounded-2xl border border-border bg-popover p-0 text-foreground shadow-xs sm:max-w-[440px]">
                 <form onSubmit={handleSubmit}>
-                    <div className="space-y-6 p-6">
+                    <div className="space-y-4 p-4">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-semibold tracking-tight text-foreground/90">
                                 Create Application
@@ -83,7 +83,7 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {/* Simple Logo Upload */}
                             <div className="flex items-center gap-4">
                                 <div
@@ -110,7 +110,7 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
                                     </h4>
                                     <button
                                         type="button"
-                                        className="text-xs font-medium text-indigo-400 hover:text-indigo-300"
+                                        className="text-xs font-medium text-indigo-600 hover:text-indigo-300 dark:text-indigo-400"
                                         onClick={() =>
                                             fileInputRef.current?.click()
                                         }
@@ -142,7 +142,7 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
                                         <SelectTrigger className="h-10 rounded-lg border-border bg-muted/30 focus:ring-0">
                                             <SelectValue placeholder="Select a workspace" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-lg border-border bg-[#09090b] text-foreground">
+                                        <SelectContent className="rounded-lg border-border bg-popover text-foreground">
                                             {teams.map((team: any) => (
                                                 <SelectItem
                                                     key={team.id}
@@ -202,7 +202,7 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 p-6 pt-2">
+                    <div className="flex justify-end gap-3 p-4 pt-2">
                         <DialogClose asChild>
                             <Button
                                 type="button"
@@ -215,7 +215,7 @@ export default function CreateProjectModal({ children }: PropsWithChildren) {
                         <Button
                             type="submit"
                             disabled={processing}
-                            className="h-10 rounded-lg bg-white px-6 text-sm font-semibold text-black transition-all hover:bg-white/90"
+                            className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                         >
                             {processing ? 'Creating...' : 'Create Application'}
                         </Button>

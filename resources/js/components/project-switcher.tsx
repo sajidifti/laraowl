@@ -58,9 +58,9 @@ export function ProjectSwitcher() {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="group w-full justify-start border border-border bg-muted/30 px-2 py-6 transition-all group-data-[collapsible=icon]:px-2 hover:bg-white/[0.05]"
+                    className="group w-full justify-start border border-border bg-muted/30 px-2 py-2.5 transition-all group-data-[collapsible=icon]:px-2 hover:bg-foreground/[0.05]"
                 >
-                    <div className="mr-2 flex aspect-square size-6 items-center justify-center rounded bg-purple-600/20 text-purple-400 group-data-[collapsible=icon]:mr-0">
+                    <div className="mr-2 flex aspect-square size-6 items-center justify-center rounded bg-purple-600/20 text-purple-600 group-data-[collapsible=icon]:mr-0 dark:text-purple-400">
                         <Layout className="size-3" />
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">

@@ -18,7 +18,7 @@ export function ConnectCloudflare() {
 
     return (
         <div className="flex min-h-[50vh] animate-in flex-col items-center justify-center px-4 py-12 duration-700 fade-in slide-in-from-bottom-4">
-            <div className="mb-8">
+            <div className="mb-5">
                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 shadow-sm">
                     <Shield className="h-10 w-10 text-primary" />
                 </div>
